@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.matplotlib-cache/
+.coverage
+# built index (regenerate with `python -m docqa.ingest`)
+data/index.joblib
+.DS_Store
+Thumbs.db

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-document-qa"
+version = "1.0.0"
+description = "A small Retrieval-Augmented Generation (RAG) app: ask questions over your documents, answered by Claude with citations."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Ahmed Fawzy Yahya" }]
+keywords = ["rag", "retrieval-augmented-generation", "llm", "claude", "nlp", "question-answering"]
+dependencies = [
+    "numpy>=1.24",
+    "scikit-learn>=1.4",
+    "joblib>=1.3",
+    "anthropic>=0.40",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "ruff>=0.4"]
+transformer = ["torch>=2.1", "transformers>=4.40"]   # dense embedding backend
+ui = ["gradio>=4.0"]                                   # optional web demo
+
+[project.scripts]
+docqa-ingest = "docqa.ingest:main"
+docqa-ask = "docqa.ask:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
