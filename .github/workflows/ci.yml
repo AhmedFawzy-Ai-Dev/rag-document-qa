@@ -27,7 +27,9 @@ jobs:
       - name: Ingest + ask (extractive, no API key)
         run: |
           python -m docqa.ingest
-          python -m docqa.ask "How does RAG reduce hallucination?" --show-sources
+          python -m docqa.ask "How do I keep class proportions equal across CV folds?" --show-sources
+      - name: Retrieval eval (TF-IDF)
+        run: python -m docqa.evaluate --backend tfidf
 
   # The dense backend needs torch and a model download, so it gets its own job
   # (one Python version) instead of slowing down the matrix above.
@@ -54,5 +56,5 @@ jobs:
         run: pytest -q
       - name: Ingest + ask (transformer backend)
         run: |
-          python -m docqa.ingest --backend transformer
+          python -m docqa.ingest --backend transformer --docs data/ml_notes
           python -m docqa.ask "my fraud model is 99% right but catches nothing" --show-sources
