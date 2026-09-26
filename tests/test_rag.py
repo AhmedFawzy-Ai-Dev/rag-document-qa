@@ -637,3 +637,91 @@ def test_judge_summary():
     assert s["fully_supported"] == pytest.approx(1 / 3, abs=1e-3)
     assert s["mostly_or_fully_supported"] == pytest.approx(2 / 3, abs=1e-3)
     assert s["matches_reference"] == pytest.approx(2 / 3, abs=1e-3)
+
+
+# --- files, follow-ups and the chat UI logic ----------------------------------------------
+
+PDF = config.REPO_ROOT / "tests" / "data" / "model_cards.pdf"
+
+
+def test_pdf_is_chunked_by_page():
+    from docqa.chunk import load_file
+
+    chunks = load_file(PDF)
+    assert [c.section for c in chunks] == ["model_cards > Page 1", "model_cards > Page 2"]
+    assert "demographic group" in chunks[1].text
+
+
+def test_unsupported_files_are_rejected(tmp_path):
+    from docqa.chunk import load_file
+
+    bad = tmp_path / "slides.pptx"
+    bad.write_bytes(b"x")
+    with pytest.raises(ValueError, match="Unsupported"):
+        load_file(bad)
+
+
+def test_uploaded_files_are_indexed_and_searchable(monkeypatch):
+    from docqa.chat import index_files
+
+    monkeypatch.setattr(config, "EMBEDDING_BACKEND", "bm25")
+    store = index_files([PDF, NOTES / "data_leakage.md"])
+    hit = store.search("metrics for each demographic group", 1)[0]
+    assert hit.chunk.source == "model_cards.pdf" and hit.chunk.section.endswith("Page 2")
+
+
+def test_follow_up_rewriting(monkeypatch):
+    from docqa.conversation import standalone_question
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    assert standalone_question("What is PCA?", []) == ("What is PCA?", "as-is")
+    history = [{"role": "user", "content": "How does gradient boosting work?"},
+               {"role": "assistant", "content": "It adds trees."}]
+    q, how = standalone_question("does it handle NaNs?", history)
+    assert how == "prefixed" and q == "How does gradient boosting work? does it handle NaNs?"
+
+
+def test_follow_up_rewriting_with_claude(fake_key, monkeypatch):
+    from docqa.conversation import standalone_question
+
+    calls = _fake_claude(monkeypatch, "Does gradient boosting handle missing values?")
+    history = [{"role": "user", "content": "How does gradient boosting work?"},
+               {"role": "assistant", "content": "It adds trees."}]
+    q, how = standalone_question("does it handle NaNs?", history)
+    assert (q, how) == ("Does gradient boosting handle missing values?", "claude")
+    (req,) = calls
+    assert req["model"] == config.REWRITE_MODEL and req["output_config"] == {"effort": "low"}
+    assert "does it handle NaNs?" in req["messages"][0]["content"]
+
+
+def test_chat_streams_then_shows_cited_sentences(tfidf_store, fake_key, monkeypatch):
+    from docqa.chat import respond
+
+    _fake_claude(monkeypatch, "Leakage is bad", citations=[_cite(0, "Data leakage happens.")])
+    snapshots = list(respond(LEAKAGE_Q, [], tfidf_store))
+    assert snapshots[0].endswith(" ▌")                       # streaming cursor
+    final = snapshots[-1]
+    assert final.startswith("Leakage is bad [1]")
+    assert "> **[1]** Data leakage happens." in final and "data_leakage.md ›" in final
+
+
+def test_chat_reports_the_rewritten_question(tfidf_store, monkeypatch):
+    from docqa.chat import respond
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    history = [{"role": "user", "content": "What is data leakage?"},
+               {"role": "assistant", "content": "..."}]
+    final = list(respond("how do I detect it?", history, tfidf_store))[-1]
+    assert "searched for: *What is data leakage? how do I detect it?*" in final
+    assert "Retrieved passages" in final and "extractive mode" in final
+
+
+def test_chat_session_limit(tfidf_store, monkeypatch):
+    from docqa.chat import respond
+
+    monkeypatch.setattr(config, "MAX_QUESTIONS_PER_SESSION", 1)
+    history = [{"role": "user", "content": "q1"}, {"role": "assistant", "content": "a1"}]
+    (reply,) = list(respond("q2", history, tfidf_store))
+    assert "1 questions per session" in reply

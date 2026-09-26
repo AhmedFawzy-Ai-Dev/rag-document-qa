@@ -20,8 +20,8 @@ the license is in [`sklearn/LICENSE`](sklearn/LICENSE).
 
 ## Use your own documents
 
-Point `RAG_DOCS_DIR` (or `--docs`) at a folder of `.md` / `.txt` files and
-rebuild the index:
+Point `RAG_DOCS_DIR` (or `--docs`) at a folder of `.md`, `.txt` or `.pdf`
+files and rebuild the index (or upload files in the web UI):
 
 ```bash
 python -m docqa.ingest --docs path/to/your/docs
