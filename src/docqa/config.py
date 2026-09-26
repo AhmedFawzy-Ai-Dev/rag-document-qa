@@ -27,15 +27,40 @@ CHUNK_WORDS = 200        # max words per chunk
 CHUNK_OVERLAP = 50       # words shared between windows of an over-long block
 
 # --- retrieval ---
-# Backend for turning text into vectors:
-#   "tfidf"       -> scikit-learn TF-IDF (default; no downloads, fully local)
-#   "transformer" -> dense sentence-transformers embeddings (optional extra)
-EMBEDDING_BACKEND = os.environ.get("RAG_BACKEND", "tfidf")
+# Retrieval backend (scores on the eval set are in the README):
+#   "bm25"        -> Okapi BM25 keyword matching (no downloads, fully local)
+#   "tfidf"       -> TF-IDF cosine (the original baseline)
+#   "transformer" -> dense sentence-transformers embeddings (`transformer` extra)
+#   "hybrid"      -> BM25 + dense, fused with reciprocal rank fusion (extra)
+#   "auto"        -> hybrid when the extra is installed, else bm25 (default)
+EMBEDDING_BACKEND = os.environ.get("RAG_BACKEND", "auto")
 # bge-small (33M params, 384-d; a BERT fine-tuned for retrieval) beat
 # all-MiniLM-L6-v2, multi-qa-MiniLM and a raw mean-pooled BERT-mini in a
 # comparison on the ML notes (README, "Design notes").
 EMBED_MODEL_NAME = os.environ.get("RAG_EMBED_MODEL", "BAAI/bge-small-en-v1.5")
 TOP_K = int(os.environ.get("RAG_TOP_K", "4"))
+
+# Reranking: a cross-encoder rescores the top RERANK_CANDIDATES chunks. "auto"
+# turns it on when the `transformer` extra is installed. On the eval set,
+# MiniLM-L6 (22M params) lifted hybrid MRR from 0.74 to 0.84. With 20 candidates
+# (the right section is among them for 96% of questions) it is 30% faster than
+# with 30 for an MRR 0.003 lower.
+RERANK = os.environ.get("RAG_RERANK", "auto").lower()
+RERANK_MODEL = os.environ.get("RAG_RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L6-v2")
+RERANK_CANDIDATES = int(os.environ.get("RAG_RERANK_CANDIDATES", "20"))
+
+
+def dense_available() -> bool:
+    """Whether the `transformer` extra (sentence-transformers) is installed."""
+    from importlib.util import find_spec
+
+    return find_spec("sentence_transformers") is not None
+
+
+def rerank_enabled() -> bool:
+    if RERANK == "auto":
+        return dense_available()
+    return RERANK in {"1", "true", "yes", "on"}
 
 # Retrieved passages scoring below this are dropped as irrelevant; if none remain,
 # the app says it found nothing instead of answering from unrelated text.
@@ -46,15 +71,22 @@ TOP_K = int(os.environ.get("RAG_TOP_K", "4"))
 # correct hits, suppresses no eval question) that only catches questions sharing
 # no vocabulary with the docs, and the transformer backend doesn't filter unless
 # RAG_MIN_SCORE is set. Claude is told to say when the passages don't answer.
-MIN_SCORE_DEFAULTS = {"tfidf": 0.05, "transformer": 0.0}
+# BM25 only requires some term overlap; fused (rrf) scores are rank-based and
+# carry no relevance signal, so they aren't filtered.
+# The reranker's scores *do* separate the two: every eval question's best
+# passage scores above -5.9, while 10 of 12 off-topic questions ("Who won the
+# World Cup?") score below -8.4. -7 leaves a margin below the lowest on-topic
+# score because it was calibrated on the eval questions themselves.
+MIN_SCORE_DEFAULTS = {"tfidf": 0.05, "bm25": 1e-9, "transformer": 0.0, "rrf": 0.0,
+                      "rerank": -7.0}
 MIN_SCORE_OVERRIDE = os.environ.get("RAG_MIN_SCORE")
 
 
-def min_score(backend: str) -> float:
-    """The relevance threshold for a retrieval backend."""
+def min_score(kind: str) -> float:
+    """The relevance threshold for a kind of score (a scorer, "rrf" or "rerank")."""
     if MIN_SCORE_OVERRIDE is not None:
         return float(MIN_SCORE_OVERRIDE)
-    return MIN_SCORE_DEFAULTS.get(backend, 0.0)
+    return MIN_SCORE_DEFAULTS.get(kind, 0.0)
 
 # --- generation (Claude) ---
 # Default to Claude Opus 5; override with RAG_MODEL (e.g. claude-haiku-4-5 for

@@ -21,55 +21,49 @@
 Ask a question over a folder of documents and get a grounded, cited answer:
 
 ```bash
-python -m docqa.ask "How do I keep class proportions equal across CV folds?" --show-sources
+python -m docqa.ask "How does gradient boosting handle missing values?" --show-sources
 ```
 
 With `ANTHROPIC_API_KEY` set, Claude synthesizes a grounded answer and cites the
 passages (wording will vary — this is an illustrative example of the format):
 
 ```
-A: If class proportions must be balanced across folds while keeping groups
-together, use StratifiedGroupKFold instead of GroupKFold [1].
+A: HistGradientBoostingClassifier and HistGradientBoostingRegressor support NaNs
+natively: at each split the tree learns whether samples with missing values go
+left or right, based on the gain [1]. If a feature had no missing values during
+training, such samples go to the child with the most samples [1].
 
 [mode: claude]
 ```
 
-With **no key**, the app answers in extractive mode (verbatim from the docs) —
-this is the exact, reproducible output you get offline with the default TF-IDF
-retrieval:
+With **no key**, the app answers in extractive mode (verbatim from the docs).
+This is the output with the full retrieval stack (hybrid search + reranker; the
+passage is trimmed here):
 
 ```
-Q: How do I keep class proportions equal across CV folds?
+Q: How does gradient boosting handle missing values?
 
-A: Cross-validation: evaluating estimator performance > Cross validation iterators > Cross-validation iterators for grouped data > Group K-fold. Each subject is in a different testing fold, and the same subject is never in
-both testing and training. Notice that the folds do not have exactly the same
-size due to the imbalance in the data. If class proportions must be balanced
-across folds, `StratifiedGroupKFold` is a better option.
+A: Ensembles: Gradient boosting, random forests, bagging, voting, stacking > Gradient-boosted trees > Histogram-Based Gradient Boosting > Missing values support. `HistGradientBoostingClassifier` and
+`HistGradientBoostingRegressor` have built-in support for missing
+values (NaNs).
 
-Here is a visualization of the cross-validation behavior.
-
-Similar to `KFold`, the test sets from `GroupKFold` will form a
-complete partition of all the data.
-
-While `GroupKFold` attempts to place the same number of samples in each
-fold when `shuffle=False`, when `shuffle=True` it attempts to place an equal
-number of distinct groups in each fold (but does not account for group sizes).
-
-(Extractive mode — showing the most relevant passage [1] from cross_validation.md. Set ANTHROPIC_API_KEY for a synthesized answer.)
+During training, the tree grower learns at each split point whether samples
+with missing values should go to the left or right child, based on the
+potential gain. [...]
 
 [mode: extractive]
 
 Sources (most relevant first):
-  [1] cross_validation.md  (score 0.1832)
-  [2] cross_validation.md  (score 0.0923)
-  [3] cross_validation.md  (score 0.0695)
-  [4] preprocessing.md  (score 0.0642)
+  [1] ensemble.md  (score 5.1687)
+  [2] ensemble.md  (score 5.1496)
+  [3] ensemble.md  (score 3.6404)
+  [4] ensemble.md  (score 3.0114)
 ```
 
-Note what TF-IDF did: it ranked the *Group K-fold* section first because that
-section happens to say "class proportions", while the real answer is
-*Stratified K-fold*. Word overlap alone misses what the question means; closing
-that gap is what the retrieval upgrades below are measured on.
+Keyword search alone (BM25, what you get without the `transformer` extra) ranks
+the *Categorical Features Support* section first for this question, because it
+shares more words with it; the reranker, which reads question and passage
+together, puts *Missing values support* on top.
 
 The knowledge base is the scikit-learn user guide, committed in
 [`data/sklearn/`](data/sklearn) so the app works the moment you clone it. Point
@@ -80,33 +74,47 @@ those instead; see [`data/README.md`](data/README.md).
 
 ## How it works
 
-A textbook RAG pipeline, kept small enough to read in one sitting:
+The retrieval stack production RAG systems use, kept small enough to read in
+one sitting:
 
 ```
-documents ──► chunk ──► embed ──► vector store
-                                       │
-question ─────────────► embed ─► cosine search ─► top-k passages
-                                                        │
-                                          Claude (grounded + cited)
-                                                        │
-                                                    answer [n]
+documents ─► chunk (heading-aware) ─┬─► BM25 index ─────────┐
+                                     └─► bge-small vectors ──┤
+                                                             │
+question ─► BM25 top ranks ─┐                                │
+        └─► dense top ranks ┴─► reciprocal rank fusion ─► top 20 candidates
+                                                             │
+                              cross-encoder reranker (reads question + passage together)
+                                                             │
+                                             top 4 passages ─► Claude (grounded + cited)
 ```
 
 1. **Chunk** (`chunk.py`) — split docs along their headings, packing short
-   paragraphs of the same section together (~120 words per chunk, long ones
-   windowed with overlap). Every chunk starts with its heading path, e.g.
+   paragraphs of the same section together (up to 200 words per chunk, long
+   ones windowed with overlap). Every chunk starts with its heading path, e.g.
    *Cross-validation > Cross validation iterators > K-fold*, so it keeps its
    context wherever it lands.
-2. **Embed** (`embed.py`) — two interchangeable backends:
-   - **`tfidf`** (default) — scikit-learn TF-IDF. No downloads, fully local, and
-     a genuinely strong retrieval baseline.
-   - **`transformer`** (optional) — dense [sentence-transformers](https://sbert.net)
-     embeddings (default `BAAI/bge-small-en-v1.5`) for semantic retrieval beyond
-     exact word matches.
-3. **Retrieve** (`store.py`) — cosine similarity over the chunk vectors.
-4. **Generate** (`generate.py`) — the retrieved passages are put in the prompt
-   and **Claude** answers using only them, citing sources. No key? It falls back
-   to an **extractive** answer (the top passages) so the app still runs.
+2. **Retrieve** (`retrieve.py`, `store.py`) — two complementary searches:
+   - **BM25** — keyword matching (Okapi BM25). Exact on API names like
+     `HistGradientBoostingClassifier`; no downloads.
+   - **Dense** — [sentence-transformers](https://sbert.net) embeddings
+     (`BAAI/bge-small-en-v1.5`, a BERT fine-tuned for retrieval) that match
+     meaning even when the words differ.
+
+   Their rankings are merged with **reciprocal rank fusion** (RRF), which uses
+   only ranks, so the two score scales never need calibrating.
+3. **Rerank** — a **cross-encoder** (`ms-marco-MiniLM-L6-v2`) rescores the top
+   20 fused candidates. Unlike the embedding model, which encodes question and
+   passage separately, it reads them together, so attention connects each word
+   of the question with each word of the passage. That is more accurate, and
+   too slow to run on every chunk, hence the two stages. Its score is also a
+   usable relevance signal (see below).
+4. **Generate** (`generate.py`) — the top passages are put in the prompt and
+   **Claude** answers using only them, citing sources. No key? It falls back
+   to an **extractive** answer (the top passage) so the app still runs.
+
+Without the optional `transformer` extra, the app runs BM25 alone: no torch,
+no model downloads.
 
 **Why grounding matters:** answers are tied to retrieved evidence (less
 hallucination), stay current without retraining, and are auditable through
@@ -117,9 +125,9 @@ citations.
 ## Quickstart
 
 ```bash
-pip install -e ".[dev]"
-python -m docqa.ingest                       # build the index (TF-IDF, seconds)
-python -m docqa.ask "How do I keep class proportions equal across CV folds?" --show-sources
+pip install -e ".[dev,transformer]"          # full stack; drop ",transformer" for BM25 only
+python -m docqa.ingest                       # build the index (~4 min on a laptop CPU; BM25-only: seconds)
+python -m docqa.ask "How does gradient boosting handle missing values?" --show-sources
 python -m docqa.evaluate                     # retrieval metrics on the eval set
 pytest -q
 ```
@@ -132,10 +140,9 @@ export ANTHROPIC_API_KEY=sk-ant-...          # Windows: setx ANTHROPIC_API_KEY .
 python -m docqa.ask "Why can accuracy be misleading on imbalanced data?"
 ```
 
-**Semantic (embedding) retrieval** and the **web UI** are optional extras:
+**The web UI** is an optional extra too:
 
 ```bash
-pip install -e ".[transformer]" && python -m docqa.ingest --backend transformer
 pip install -e ".[ui]" && python app.py      # Gradio chat demo
 ```
 
@@ -144,13 +151,13 @@ The generation model defaults to **`claude-opus-5`**; override with `RAG_MODEL`
 call fails (bad key, unknown model, network), the app still answers extractively
 and prints the reason as a `Note:`.
 
-Passages scoring below a relevance threshold are dropped, so a question that
-shares no vocabulary with the docs gets "I couldn't find anything relevant"
-(and no Claude call is made). The threshold is deliberately low (TF-IDF `0.05`,
-none for the transformer backend): on the scikit-learn corpus, similarity scores
-of on- and off-topic questions overlap, so a stricter cut would also suppress
-genuine questions. Claude's instruction to say when the passages don't answer
-the question handles the rest. Tune it with `RAG_MIN_SCORE`.
+**Off-topic questions.** Passages the reranker scores below `-7` are dropped;
+if none remain, the app says "I couldn't find anything relevant" and makes no
+Claude call. On the eval set, every question's best passage scores above
+`-5.9`, while 10 of 12 off-topic questions ("Who won the 2022 World Cup?")
+score below `-8.4`. Without the reranker there's no reliable cut: similarity
+scores of on- and off-topic questions overlap on this corpus, so BM25 only
+drops questions that share no words with the docs. Tune it with `RAG_MIN_SCORE`.
 
 **All settings** (environment variables, see `src/docqa/config.py`):
 
@@ -158,10 +165,13 @@ the question handles the rest. Tune it with `RAG_MIN_SCORE`.
 |---|---|---|
 | `RAG_MODEL` | `claude-opus-5` | Claude model for answers |
 | `RAG_MAX_TOKENS` | `16000` | answer token cap (thinking counts toward it) |
-| `RAG_BACKEND` | `tfidf` | `tfidf` or `transformer` |
-| `RAG_TOP_K` | `4` | passages retrieved per question |
-| `RAG_MIN_SCORE` | `0.05` (TF-IDF) | relevance threshold |
-| `RAG_EMBED_MODEL` | `BAAI/bge-small-en-v1.5` | any sentence-transformers model, for the transformer backend |
+| `RAG_BACKEND` | `auto` | `hybrid` (with the `transformer` extra) or `bm25`; also `tfidf`, `transformer` |
+| `RAG_RERANK` | `auto` | cross-encoder reranking: on with the `transformer` extra; `0`/`1` to force |
+| `RAG_RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L6-v2` | any sentence-transformers cross-encoder |
+| `RAG_RERANK_CANDIDATES` | `20` | fused candidates passed to the reranker |
+| `RAG_TOP_K` | `4` | passages given to Claude |
+| `RAG_MIN_SCORE` | per score type (reranker `-7`) | relevance threshold |
+| `RAG_EMBED_MODEL` | `BAAI/bge-small-en-v1.5` | any sentence-transformers model, for dense retrieval |
 | `RAG_DOCS_DIR` | `<data dir>/sklearn` | the documents to index |
 | `RAG_DATA_DIR` | `<repo>/data` | folder holding the corpus, eval set and `index.joblib`; set it when installed with a regular `pip install .` |
 
@@ -176,21 +186,41 @@ guide's own terms ("keyword") and 51 describing the need in other words
 spot-checked against it.
 
 ```bash
-python -m docqa.evaluate            # every installed backend
+python -m docqa.evaluate            # every installed method
 ```
 
 A retrieved chunk is a **page hit** if it comes from the right page and a
 **section hit** if it also sits in the right section; **MRR** is the mean of
-1/rank of the first section hit. Current results (1,003 chunks):
+1/rank of the first section hit. Results (1,003 chunks; latency on a 4-core
+laptop CPU, i7-8550U):
 
-| backend | page@1 | page@5 | section@1 | section@5 | MRR | paraphrase section@5 | ms/query |
+| method | page@1 | section@1 | section@3 | section@5 | MRR | paraphrase section@5 | ms/query |
 |---|---|---|---|---|---|---|---|
-| TF-IDF | 0.76 | 0.94 | 0.64 | 0.78 | 0.70 | 0.57 | 4 |
-| bge-small (dense) | 0.84 | 0.89 | 0.65 | 0.77 | 0.70 | 0.55 | 33 |
+| TF-IDF (where this started) | 0.76 | 0.64 | 0.74 | 0.78 | 0.70 | 0.57 | 8 |
+| BM25 | 0.83 | 0.68 | 0.81 | 0.84 | 0.74 | 0.69 | 1 |
+| dense (bge-small) | 0.84 | 0.65 | 0.74 | 0.77 | 0.70 | 0.55 | 44 |
+| hybrid (BM25 + dense, RRF) | 0.89 | 0.69 | 0.78 | 0.83 | 0.74 | 0.67 | 44 |
+| BM25 + rerank | 0.91 | 0.79 | 0.86 | 0.88 | 0.82 | 0.76 | 2,857 |
+| dense + rerank | 0.89 | 0.77 | 0.87 | 0.89 | 0.82 | 0.78 | 2,885 |
+| **hybrid + rerank (default)** | **0.91** | **0.80** | **0.88** | **0.92** | **0.84** | **0.84** | 3,266 |
 
-Dense retrieval finds the right *page* more often; TF-IDF is as good at the
-right *section* and slightly better on paraphrases. Neither is better
-overall, which is the case for combining them.
+What the numbers say:
+
+- **BM25 beats TF-IDF** on every metric (MRR 0.70 → 0.74, paraphrases 0.57 →
+  0.69), at no cost, so it is the default when the extra isn't installed.
+- **Fusion on its own barely moves the top ranks** (MRR 0.74, like BM25), but it
+  finds the right page far more often (0.89) and puts the right section in the
+  top 20 for 96% of questions, against 90–92% for either search alone. That's
+  what the reranker needs: with fused candidates it reaches 0.84 on
+  paraphrases, against 0.76 when BM25 alone supplies them.
+- **The reranker is the big step**: section@1 0.69 → 0.80, MRR 0.74 → 0.84. It
+  is also the cost: ~3 s per question on a laptop CPU, almost all of it in the
+  cross-encoder.
+
+It doesn't fix everything. For *"How do I keep class proportions equal across
+CV folds?"* the top hit is still the *Group K-fold* section (it mentions class
+proportions and points to `StratifiedGroupKFold`, the second hit) rather than
+*Stratified K-fold*.
 
 **Chunking was chosen on this set too** (MRR, TF-IDF / bge-small):
 
@@ -214,8 +244,9 @@ rag-document-qa/
 ├── src/docqa/
 │   ├── config.py                # paths, backend, model, chunk params
 │   ├── chunk.py                 # heading-aware chunking
-│   ├── embed.py                 # TF-IDF and transformer backends
-│   ├── store.py                 # build / persist / cosine-search index
+│   ├── embed.py                 # TF-IDF and sentence-transformers embedders
+│   ├── retrieve.py              # BM25, cosine scorers, RRF, cross-encoder reranker
+│   ├── store.py                 # build / persist / search (fuse + rerank) the index
 │   ├── generate.py              # Claude answer + extractive fallback
 │   ├── pipeline.py              # retrieve -> generate
 │   ├── evaluate.py              # retrieval metrics on the eval set
@@ -226,13 +257,25 @@ rag-document-qa/
 
 ## Design notes & honesty
 
-- **TF-IDF is the default on purpose.** Sparse retrieval is dependency-free,
-  instant, and hard to beat on small corpora; dense embeddings are one flag away
-  when semantics matter. Real systems often use both (hybrid).
-- **Why bge-small.** On the 24 labeled questions in `tests/test_rag.py` (12
-  keyword, 12 paraphrased), recall@1 was: TF-IDF 12 + 9, `all-MiniLM-L6-v2`
-  12 + 11, `bge-small-en-v1.5` 12 + 12. The mean-pooled BERT-mini that this
-  backend used before scored 9 + 8, below TF-IDF.
+- **Measured, not assumed.** Every retrieval choice here (BM25 over TF-IDF,
+  chunk size, fusion, reranking, candidate count, the relevance threshold) was
+  picked on the eval set, and the tables above are the evidence.
+- **Defaults kept standard to avoid overfitting 100 questions.** BM25 uses
+  the textbook k1=1.5, b=0.75 and RRF the paper's k=60. Tuning them on the eval
+  set scored slightly higher (e.g. RRF k=20), but that would only fit these
+  questions. The relevance threshold was calibrated on the same questions, so it
+  sits well below the lowest on-topic score.
+- **Why MiniLM for reranking.** `ms-marco-MiniLM-L6-v2` (22M params) takes ~3 s
+  per question on a laptop CPU for 20 candidates. `mxbai-rerank-xsmall-v1` was
+  over 5× slower on the same CPU, too slow for the CPU-only demo, so its
+  accuracy wasn't measured; `bge-reranker-base` is 4× larger again and wasn't
+  tried.
+- **Why bge-small for embeddings.** On the 24 labeled questions about the ML
+  notes in `tests/test_rag.py`, recall@1 was: TF-IDF 12 + 9, `all-MiniLM-L6-v2`
+  12 + 11, `bge-small-en-v1.5` 12 + 12, and a raw mean-pooled BERT-mini (the
+  original dense backend) 9 + 8.
+- **Light install still works.** Without the `transformer` extra (torch and
+  the models), `auto` falls back to BM25, which has no model downloads.
 - **In-memory store.** Fine for a small knowledge base; the `store.search`
   interface swaps cleanly to FAISS or a vector DB for scale.
 - **Extractive fallback is a feature, not a stub** — it keeps the app runnable
