@@ -26,7 +26,7 @@ from . import config
 class BM25Scorer:
     """Okapi BM25 over unigrams with English stop words removed.
 
-    Beat TF-IDF cosine on the scikit-learn eval (MRR 0.745 vs 0.696) with the
+    Beat TF-IDF cosine on the scikit-learn eval (MRR 0.76 vs 0.70) with the
     textbook parameters k1=1.5, b=0.75, which are kept rather than tuned on the
     eval questions.
     """

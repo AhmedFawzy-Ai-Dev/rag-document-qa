@@ -140,8 +140,7 @@ See the examples below and the docstring of
 
 **Examples**
 
-* sphx glr auto examples neural networks plot mlp training curves.py
-* See sphx glr auto examples neural networks plot mnist filters.py for
+* See  for
   visualized representation of trained weights.
 
 ## Regression
@@ -163,10 +162,6 @@ by penalizing weights with large magnitudes. Following plot displays varying
 decision function with value of alpha.
 
 See the examples below for further information.
-
-**Examples**
-
-* sphx glr auto examples neural networks plot mlp alpha.py
 
 ## Algorithms
 

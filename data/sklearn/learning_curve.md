@@ -29,12 +29,6 @@ easy to see whether the estimator suffers from bias or variance. However, in
 high-dimensional spaces, models can become very difficult to visualize. For
 this reason, it is often helpful to use the tools described below.
 
-**Examples**
-
-* sphx glr auto examples model selection plot underfitting overfitting.py
-* sphx glr auto examples model selection plot train error vs test error.py
-* sphx glr auto examples model selection plot learning curve.py
-
 ## Validation curve
 
 To validate a model we need a scoring function (see model evaluation),
@@ -138,5 +132,5 @@ to `learning_curve` to generate and plot the learning curve:
 
 **Examples**
 
-* See sphx glr auto examples model selection plot learning curve.py for an
+* See  for an
   example of using learning curves to check the scalability of a predictive model.

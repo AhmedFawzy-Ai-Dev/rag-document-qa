@@ -62,11 +62,6 @@ estimators is slightly different, and some of the features from
 `GradientBoostingClassifier` and `GradientBoostingRegressor`
 are not yet supported, for instance some loss functions.
 
-**Examples**
-
-* sphx glr auto examples inspection plot partial dependence.py
-* sphx glr auto examples ensemble plot forest hist grad boosting comparison.py
-
 #### Usage
 
 Most of the parameters are unchanged from
@@ -201,10 +196,6 @@ If no missing values were encountered for a given feature during training,
 then samples with missing values are mapped to whichever child has the most
 samples.
 
-**Examples**
-
-* sphx glr auto examples ensemble plot hgbt regression.py
-
 #### Sample weight support
 
 `HistGradientBoostingClassifier` and
@@ -281,7 +272,7 @@ Finally, when the input is a DataFrame we can use
 The cardinality of each categorical feature must be less than the `max_bins`
 parameter. For an example using histogram-based gradient boosting on categorical
 features, see
-sphx glr auto examples ensemble plot gradient boosting categorical.py.
+.
 
 If there are missing values during training, the missing values will be
 treated as a proper category. If there are no missing values during training,
@@ -304,10 +295,6 @@ formal proof). As a result, only $K - 1$ splits need to be considered
 instead of $2^{K - 1} - 1$. The initial sorting is a
 $\mathcal{O}(K \log(K))$ operation, leading to a total complexity of
 $\mathcal{O}(K \log(K) + K)$, instead of $\mathcal{O}(2^K)$.
-
-**Examples**
-
-* sphx glr auto examples ensemble plot gradient boosting categorical.py
 
 #### Monotonic Constraints
 
@@ -361,15 +348,11 @@ Also, monotonic constraints are not supported for multiclass classification.
 For a practical implementation of monotonic constraints with the histogram-based
 gradient boosting, including how they can improve generalization when domain knowledge
 is available, see
-sphx glr auto examples ensemble plot monotonic constraints.py.
+.
 
 **Note:**
 Since categories are unordered quantities, it is not possible to enforce
 monotonic constraints on categorical features.
-
-**Examples**
-
-* sphx glr auto examples ensemble plot hgbt regression.py
 
 #### Interaction constraints
 
@@ -398,10 +381,6 @@ LightGBM uses the same logic for overlapping groups.
 Note that features not listed in `interaction_cst` are automatically
 assigned an interaction group for themselves. With again 3 features, this
 means that `[{0}]` is equivalent to `[{0}, {1, 2}]`.
-
-**Examples**
-
-* sphx glr auto examples inspection plot partial dependence.py
 
 **References**
 
@@ -543,11 +522,6 @@ The test error at each iteration can be obtained
 via the `staged_predict` method which returns a
 generator that yields the predictions at each stage. Plots like these can be used
 to determine the optimal number of trees (i.e. `n_estimators`) by early stopping.
-
-**Examples**
-
-* sphx glr auto examples ensemble plot gradient boosting regression.py
-* sphx glr auto examples ensemble plot gradient boosting oob.py
 
 #### Fitting additional weak-learners
 
@@ -725,7 +699,7 @@ the parameter `loss`:
 * Quantile (`'quantile'`): A loss function for quantile regression.
   Use `0 < alpha < 1` to specify the quantile. This loss function
   can be used to create prediction intervals
-  (see sphx glr auto examples ensemble plot gradient boosting quantile.py).
+  (see ).
 
 **Classification**
 * Binary log-loss (`'log-loss'`): The binomial
@@ -765,7 +739,7 @@ values of `learning_rate` favor better test error. [HTF]
 recommend to set the learning rate to a small constant
 (e.g. `learning_rate <= 0.1`) and choose `n_estimators` large enough
 that early stopping applies,
-see sphx glr auto examples ensemble plot gradient boosting early stopping.py
+see 
 for a more detailed discussion of the interaction between
 `learning_rate` and `n_estimators` see [R2007].
 
@@ -800,12 +774,6 @@ Out-of-bag estimates can be used for model selection, for example to determine
 the optimal number of iterations. OOB estimates are usually very pessimistic thus
 we recommend to use cross-validation instead and only use OOB if cross-validation
 is too time consuming.
-
-**Examples**
-
-* sphx glr auto examples ensemble plot gradient boosting regularization.py
-* sphx glr auto examples ensemble plot gradient boosting oob.py
-* sphx glr auto examples ensemble plot ensemble oob.py
 
 #### Interpretation with feature importance
 
@@ -849,10 +817,6 @@ array([0.107, 0.105, 0.113, 0.0987, 0.0947,
 Note that this computation of feature importance is based on entropy, and it
 is distinct from `sklearn.inspection.permutation_importance` which is
 based on permutation of the features.
-
-**Examples**
-
-* sphx glr auto examples ensemble plot gradient boosting regression.py
 
 **References**
 
@@ -945,10 +909,6 @@ characteristics of the dataset and the modeling task. It's a good idea
 to try both models and compare their performance and computational efficiency
 on your specific problem to determine which model is the best fit.
 
-**Examples**
-
-* sphx glr auto examples ensemble plot forest hist grad boosting comparison.py
-
 ### Extremely Randomized Trees
 
 In extremely randomized trees (see `ExtraTreesClassifier`
@@ -1035,11 +995,6 @@ fast). Significant speedup can still be achieved though when building
 a large number of trees, or when building a single tree requires a fair
 amount of time (e.g., on large datasets).
 
-**Examples**
-
-* sphx glr auto examples ensemble plot forest iris.py
-* sphx glr auto examples miscellaneous plot multioutput face completion.py
-
 **References**
 
 [B2001] L. Breiman, "Random Forests", Machine Learning, 45(1), 5-32, 2001.
@@ -1076,17 +1031,13 @@ features**, that is features with many unique values.
 permutation importance is an alternative to impurity-based feature
 importance that does not suffer from these flaws. These two methods of
 obtaining feature importance are explored in:
-sphx glr auto examples inspection plot permutation importance.py.
+.
 
 In practice those estimates are stored as an attribute named
 `feature_importances_` on the fitted model. This is an array with shape
 `(n_features,)` whose values are positive and sum to 1.0. The higher
 the value, the more important is the contribution of the matching feature
 to the prediction function.
-
-**Examples**
-
-* sphx glr auto examples ensemble plot forest importances.py
 
 **References**
 
@@ -1112,12 +1063,10 @@ estimation.
 
 **Examples**
 
-* sphx glr auto examples ensemble plot random forest embedding.py
-
-* sphx glr auto examples manifold plot lle digits.py compares non-linear
+*  compares non-linear
   dimensionality reduction techniques on handwritten digits.
 
-* sphx glr auto examples ensemble plot feature transformation.py compares
+*  compares
   supervised and unsupervised tree based feature transformations.
 
 **See also:**
@@ -1206,10 +1155,6 @@ subsets of 50% of the samples and 50% of the features.
     >>> from sklearn.neighbors import KNeighborsClassifier
     >>> bagging = BaggingClassifier(KNeighborsClassifier(),
     ...                             max_samples=0.5, max_features=0.5)
-
-**Examples**
-
-* sphx glr auto examples ensemble plot bias variance.py
 
 **References**
 
@@ -1310,7 +1255,7 @@ weighted average  0.37          0.4             0.23
 
 Here, the predicted class label is 2, since it has the highest average
 predicted probability. See the example on
-sphx glr auto examples ensemble plot voting decision regions.py for a
+ for a
 demonstration of how the predicted class label can be obtained from the weighted
 average of predicted probabilities.
 
@@ -1389,10 +1334,6 @@ The following example shows how to fit the VotingRegressor:
 >>> ereg = VotingRegressor(estimators=[('gb', reg1), ('rf', reg2), ('lr', reg3)])
 >>> ereg = ereg.fit(X, y)
 ```
-
-**Examples**
-
-* sphx glr auto examples ensemble plot voting regressor.py
 
 ## Stacked generalization
 
@@ -1520,10 +1461,6 @@ StackingRegressor(...)
 R2 score: 0.53
 ```
 
-**Examples**
-
-* sphx glr auto examples ensemble plot stack predictors.py
-
 **References**
 
 [W1992] Wolpert, David H. "Stacked generalization." Neural networks 5.2 (1992): 241-259.
@@ -1585,14 +1522,14 @@ minimum required number of samples to consider a split `min_samples_split`).
 
 **Examples**
 
-* sphx glr auto examples ensemble plot adaboost multiclass.py shows the performance
+*  shows the performance
   of AdaBoost on a multi-class problem.
 
-* sphx glr auto examples ensemble plot adaboost twoclass.py shows the decision boundary
+*  shows the decision boundary
   and decision function values for a non-linearly separable two-class problem
   using AdaBoost-SAMME.
 
-* sphx glr auto examples ensemble plot adaboost regression.py demonstrates regression
+*  demonstrates regression
   with the AdaBoost.R2 algorithm.
 
 **References**

@@ -242,10 +242,6 @@ partial dependence, because they will treat these unlikely
 samples differently. Remember, however, that the primary assumption for
 interpreting PDPs is that the features should be independent.
 
-**Examples**
-
-* sphx glr auto examples inspection plot partial dependence.py
-
 **Footnotes**
 
 [1] For classification, the target response may be the probability of a class (the positive class for binary classification), or the decision function.

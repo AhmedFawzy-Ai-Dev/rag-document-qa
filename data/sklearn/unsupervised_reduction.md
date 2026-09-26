@@ -17,30 +17,17 @@ chained in one step. See pipeline.
 `decomposition.PCA` looks for a combination of features that
 capture well the variance of the original features. See decompositions.
 
-**Examples**
-
-* sphx glr auto examples applications plot face recognition.py
-
 ## Random projections
 
 The module: `random_projection` provides several tools for data
 reduction by random projections. See the relevant section of the
 documentation: random projection.
 
-**Examples**
-
-* sphx glr auto examples miscellaneous plot johnson lindenstrauss bound.py
-
 ## Feature agglomeration
 
 `cluster.FeatureAgglomeration` applies
 hierarchical clustering to group together features that behave
 similarly.
-
-**Examples**
-
-* sphx glr auto examples cluster plot feature agglomeration vs univariate selection.py
-* sphx glr auto examples cluster plot digits agglomeration.py
 
 ****Feature scaling****
 Note that if features have very different scaling or statistical

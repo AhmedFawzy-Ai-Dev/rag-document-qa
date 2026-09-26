@@ -118,8 +118,12 @@ def latency_chart(results: dict, path: Path) -> None:
     ax.set_axisbelow(True)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-    ax.set_title("Quality vs. speed: the reranker buys +0.10 MRR for ~3 s per question",
-                 loc="left", fontsize=12.5, fontweight="bold", pad=10)
+    title = "Quality vs. speed"
+    if {"hybrid", HIGHLIGHT} <= results.keys():
+        gain = results[HIGHLIGHT]["all"]["mrr"] - results["hybrid"]["all"]["mrr"]
+        secs = results[HIGHLIGHT]["latency_ms"] / 1000
+        title += f": the reranker buys {gain:+.2f} MRR for ~{secs:.0f} s per question"
+    ax.set_title(title, loc="left", fontsize=12.5, fontweight="bold", pad=10)
     fig.tight_layout()
     fig.savefig(path, dpi=200)
     plt.close(fig)

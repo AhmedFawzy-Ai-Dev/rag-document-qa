@@ -69,13 +69,6 @@ the API of standard scikit-learn estimators, `GaussianProcessRegressor`:
   externally for other ways of selecting hyperparameters, e.g., via
   Markov chain Monte Carlo.
 
-**Examples**
-
-* sphx glr auto examples gaussian process plot gpr noisy targets.py
-* sphx glr auto examples gaussian process plot gpr noisy.py
-* sphx glr auto examples gaussian process plot compare gpr krr.py
-* sphx glr auto examples gaussian process plot gpr co2.py
-
 ## Gaussian Process Classification (GPC)
 
 The `GaussianProcessClassifier` implements Gaussian processes (GP) for

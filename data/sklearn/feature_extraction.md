@@ -605,20 +605,18 @@ As usual the best way to adjust the feature extraction parameters
 is to use a cross-validated grid search, for instance by pipelining the
 feature extractor with a classifier:
 
-* sphx glr auto examples model selection plot grid search text feature extraction.py
-
 **Examples**
 
-* sphx glr auto examples text plot document classification 20newsgroups.py:
+* 
   Feature encoding using a Tf-idf-weighted document-term sparse matrix.
 
-* sphx glr auto examples text plot hashing vs dict vectorizer.py: Efficiency
+* Efficiency
   comparison of the different feature extractors.
 
-* sphx glr auto examples text plot document clustering.py: Document clustering
+* Document clustering
   and comparison with `HashingVectorizer`.
 
-* sphx glr auto examples model selection plot grid search text feature extraction.py:
+* 
   Tuning hyperparameters of `TfidfVectorizer` as part of a pipeline.
 
 ### Decoding text files
@@ -710,18 +708,12 @@ In particular in a **supervised setting** it can be successfully combined
 with fast and scalable linear models to train **document classifiers**,
 for instance:
 
-* sphx glr auto examples text plot document classification 20newsgroups.py
-
 In an **unsupervised setting** it can be used to group similar documents
 together by applying clustering algorithms such as k means:
-
-* sphx glr auto examples text plot document clustering.py
 
 Finally it is possible to discover the main topics of a corpus by
 relaxing the hard assignment constraint of clustering, for instance by
 using NMF:
-
-* sphx glr auto examples applications plot topics extraction with nmf lda.py
 
 ### Limitations of the Bag of Words representation
 
@@ -896,7 +888,7 @@ be ingested using such an approach, from a practical point of view the learning
 time is often limited by the CPU time one wants to spend on the task.
 
 For a full-fledged example of out-of-core scaling in a text classification
-task see sphx glr auto examples applications plot out of core classification.py.
+task see .
 
 ### Customizing the vectorizer classes
 
@@ -987,8 +979,6 @@ factory methods instead of passing custom functions.
   for other styles of preprocessing; examples include stemming, lemmatization,
   or normalizing numerical tokens, with the latter illustrated in:
 
-  * sphx glr auto examples bicluster plot bicluster newsgroups.py
-
 Customizing the vectorizer can also be useful when handling Asian languages
 that do not use an explicit word separator such as whitespace.
 
@@ -1070,8 +1060,3 @@ connectivity information, such as Ward clustering
 or similarity matrices.
 
 **Note:**
-* sphx glr auto examples cluster plot coin ward segmentation.py
-
-* sphx glr auto examples cluster plot segmentation toy.py
-
-* sphx glr auto examples cluster plot feature agglomeration vs univariate selection.py

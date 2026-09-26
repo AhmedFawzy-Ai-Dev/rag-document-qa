@@ -242,7 +242,7 @@ for which the full training set might not fit in memory. To handle this case,
 `MultinomialNB`, `BernoulliNB`, and `GaussianNB`
 expose a `partial_fit` method that can be used
 incrementally as done with other classifiers as demonstrated in
-sphx glr auto examples applications plot out of core classification.py. All naive Bayes
+. All naive Bayes
 classifiers support sample weighting.
 
 Contrary to the `fit` method, the first call to `partial_fit` needs to be

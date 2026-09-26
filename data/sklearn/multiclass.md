@@ -197,12 +197,6 @@ array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 classification. To use this feature, feed the classifier an indicator matrix,
 in which cell [i, j] indicates the presence of label j in sample i.
 
-**Examples**
-
-* sphx glr auto examples miscellaneous plot multilabel.py
-* sphx glr auto examples classification plot classification probability.py
-* sphx glr auto examples linear model plot logistic multinomial.py
-
 ### OneVsOneClassifier
 
 `OneVsOneClassifier` constructs one classifier per

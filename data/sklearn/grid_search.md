@@ -68,34 +68,34 @@ evaluated and the best combination is retained.
 
 **Examples**
 
-- See sphx glr auto examples model selection plot nested cross validation iris.py
+- See 
   for an example of Grid Search within a cross validation loop on the iris
   dataset. This is the best practice for evaluating the performance of a
   model with grid search.
 
-- See sphx glr auto examples model selection plot grid search text feature extraction.py for an example
+- See  for an example
   of Grid Search coupling parameters from a text documents feature
   extractor (n-gram count vectorizer and TF-IDF transformer) with a
   classifier (here a linear SVM trained with SGD with either elastic
   net or L2 penalty) using a `Pipeline` instance.
 
 **Advanced examples**
-- See sphx glr auto examples model selection plot nested cross validation iris.py
+- See 
   for an example of Grid Search within a cross validation loop on the iris
   dataset. This is the best practice for evaluating the performance of a
   model with grid search.
 
-- See sphx glr auto examples model selection plot multi metric evaluation.py
+- See 
   for an example of `GridSearchCV` being used to evaluate multiple
   metrics simultaneously.
 
-- See sphx glr auto examples model selection plot grid search refit callable.py
+- See 
   for an example of using `refit=callable` interface in
   `GridSearchCV`. The example shows how this interface adds a certain
   amount of flexibility in identifying the "best" estimator. This interface
   can also be used in multiple metrics evaluation.
 
-- See sphx glr auto examples model selection plot grid search stats.py
+- See 
   for an example of how to do a statistical comparison on the outputs of
   `GridSearchCV`.
 
@@ -161,7 +161,7 @@ from sklearn.utils.fixes import loguniform
 
 **Examples**
 
-* sphx glr auto examples model selection plot randomized search.py compares the usage and efficiency
+*  compares the usage and efficiency
   of randomized search and grid search.
 
 **References**
@@ -218,9 +218,6 @@ need to explicitly import `enable_halving_search_cv`:
 ```
 
 **Examples**
-
-* sphx glr auto examples model selection plot successive halving heatmap.py
-* sphx glr auto examples model selection plot successive halving iterations.py
 
 The sections below dive into technical aspects of successive halving.
 
@@ -555,7 +552,7 @@ the `best_estimator_` on the whole dataset. If the search should not be
 refit, set `refit=False`. Leaving refit to the default value `None` will
 result in an error when using multiple metrics.
 
-See sphx glr auto examples model selection plot multi metric evaluation.py
+See 
 for an example usage.
 
 `HalvingRandomSearchCV` and `HalvingGridSearchCV` do not support

@@ -23,7 +23,7 @@ flexible.
 
 **Examples**
 
-* sphx glr auto examples classification plot lda qda.py: Comparison of LDA and
+* Comparison of LDA and
   QDA on synthetic data.
 
 ## Dimensionality reduction using Linear Discriminant Analysis
@@ -42,7 +42,7 @@ on the `fit` and `predict` methods.
 
 **Examples**
 
-* sphx glr auto examples decomposition plot pca vs lda.py: Comparison of LDA and
+* Comparison of LDA and
   PCA for dimensionality reduction of the Iris dataset
 
 ## Mathematical formulation of the LDA and QDA classifiers
@@ -197,7 +197,7 @@ A covariance estimator should have a fit method and a
 
 **Examples**
 
-* sphx glr auto examples classification plot lda.py: Comparison of LDA classifiers
+* Comparison of LDA classifiers
   with Empirical, Ledoit Wolf and OAS covariance estimator.
 
 ## Estimation algorithms

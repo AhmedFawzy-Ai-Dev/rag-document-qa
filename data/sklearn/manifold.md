@@ -51,20 +51,20 @@ from the data itself, without the use of predetermined classifications.
 
 **Examples**
 
-* See sphx glr auto examples manifold plot lle digits.py for an example of
+* See  for an example of
   dimensionality reduction on handwritten digits.
 
-* See sphx glr auto examples manifold plot compare methods.py for an example of
+* See  for an example of
   dimensionality reduction on a toy "S-curve" dataset.
 
-* See sphx glr auto examples applications plot stock market.py for an example of
+* See  for an example of
   using manifold learning to map the stock market structure based on historical stock
   prices.
 
-* See sphx glr auto examples manifold plot manifold sphere.py for an example of
+* See  for an example of
   manifold learning techniques applied to a spherical data-set.
 
-* See sphx glr auto examples manifold plot swissroll.py for an example of using
+* See  for an example of using
   manifold learning techniques on a Swiss Roll dataset.
 
 The manifold learning implementations available in scikit-learn are

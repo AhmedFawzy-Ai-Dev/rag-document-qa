@@ -83,7 +83,7 @@ string values or pandas categoricals when using the `'most_frequent'` or
  ['b' 'y']]
 ```
 
-For another example on usage, see sphx glr auto examples impute plot missing values.py.
+For another example on usage, see .
 
 ## Multivariate feature imputation
 
@@ -122,7 +122,7 @@ IterativeImputer(random_state=0)
 
 Both `SimpleImputer` and `IterativeImputer` can be used in a
 Pipeline as a way to build a composite estimator that supports imputation.
-See sphx glr auto examples impute plot missing values.py.
+See .
 
 ### Flexibility of IterativeImputer
 
@@ -132,7 +132,7 @@ out to be a particular instance of different sequential imputation algorithms
 that can all be implemented with `IterativeImputer` by passing in
 different regressors to be used for predicting missing feature values. In the
 case of missForest, this regressor is a Random Forest.
-See sphx glr auto examples impute plot iterative imputer variants comparison.py.
+See .
 
 ### Multiple vs. Single Imputation
 
@@ -202,7 +202,7 @@ array([[1. , 2. , 4. ],
        [8. , 8. , 7. ]])
 ```
 
-For another example on usage, see sphx glr auto examples impute plot missing values.py.
+For another example on usage, see .
 
 **References**
 

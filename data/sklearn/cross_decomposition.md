@@ -23,7 +23,7 @@ possible that features with small variances are relevant for predicting
 the target. In a way, PLS allows for the same kind of dimensionality
 reduction, but by taking into account the targets `y`. An illustration of
 this fact is given in the following example:
-* sphx glr auto examples cross decomposition plot pcr vs pls.py.
+* .
 
 Apart from CCA, the PLS estimators are particularly suited when the matrix of
 predictors has more variables than observations, and when there is
@@ -163,8 +163,3 @@ targets is greater than the number of samples.
 **References**
 
 [1] A survey of Partial Least Squares (PLS) methods, with emphasis on the two-block case, JA Wegelin
-
-**Examples**
-
-* sphx glr auto examples cross decomposition plot compare cross decomposition.py
-* sphx glr auto examples cross decomposition plot pcr vs pls.py

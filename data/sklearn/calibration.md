@@ -277,13 +277,6 @@ provides a natural way to obtain (better) calibrated multi-class probabilities w
 just one free parameter in contrast to using a "One-vs-Rest" scheme that adds more
 parameters for each single class.
 
-**Examples**
-
-* sphx glr auto examples calibration plot calibration curve.py
-* sphx glr auto examples calibration plot calibration multiclass.py
-* sphx glr auto examples calibration plot calibration.py
-* sphx glr auto examples calibration plot compare calibration.py
-
 **References**
 
 [1] Allan H. Murphy (1973). "A New Vector Partition of the Probability Score" Journal of Applied Meteorology and Climatology, 12(4), 595-600

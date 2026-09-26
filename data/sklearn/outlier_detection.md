@@ -114,18 +114,18 @@ results similar to `svm.OneClassSVM` which uses a Gaussian kernel
 by default. Finally, `covariance.EllipticEnvelope` assumes the data is
 Gaussian and learns an ellipse. For more details on the different estimators
 refer to the example
-sphx glr auto examples miscellaneous plot anomaly comparison.py and the
+ and the
 sections hereunder.
 
 **Examples**
 
-* See sphx glr auto examples miscellaneous plot anomaly comparison.py
+* See 
   for a comparison of the `svm.OneClassSVM`, the
   `ensemble.IsolationForest`, the
   `neighbors.LocalOutlierFactor` and
   `covariance.EllipticEnvelope`.
 
-* See sphx glr auto examples miscellaneous plot outlier detection bench.py
+* See 
   for an example showing how to evaluate outlier detection estimators,
   the `neighbors.LocalOutlierFactor` and the
   `ensemble.IsolationForest`, using ROC curves from
@@ -167,10 +167,8 @@ but regular, observation outside the frontier.
 
 **Examples**
 
-* See sphx glr auto examples svm plot oneclass.py for visualizing the
+* See  for visualizing the
   frontier learned around some data by a `svm.OneClassSVM` object.
-
-* sphx glr auto examples applications plot species distribution modeling.py
 
 ### Scaling up the One-Class SVM
 
@@ -183,7 +181,7 @@ sgd online one class svm for more details.
 
 **Examples**
 
-* See sphx glr auto examples linear model plot sgdocsvm vs ocsvm.py
+* See 
   for an illustration of the approximation of a kernelized One-Class SVM
   with the `linear_model.SGDOneClassSVM` combined with kernel approximation.
 
@@ -216,13 +214,13 @@ This strategy is illustrated below.
 
 **Examples**
 
-* See sphx glr auto examples covariance plot mahalanobis distances.py for
+* See  for
   an illustration of the difference between using a standard
   (`covariance.EmpiricalCovariance`) or a robust estimate
   (`covariance.MinCovDet`) of location and covariance to
   assess the degree of outlyingness of an observation.
 
-* See sphx glr auto examples applications plot outlier detection wine.py
+* See 
   for an example of robust covariance estimation on a real data set.
 
 **References**
@@ -272,10 +270,10 @@ allows you to add more trees to an already fitted model:
 
 **Examples**
 
-* See sphx glr auto examples ensemble plot isolation forest.py for
+* See  for
   an illustration of the use of IsolationForest.
 
-* See sphx glr auto examples miscellaneous plot anomaly comparison.py
+* See 
   for a comparison of `ensemble.IsolationForest` with
   `neighbors.LocalOutlierFactor`,
   `svm.OneClassSVM` (tuned to perform like an outlier detection
@@ -337,10 +335,10 @@ This strategy is illustrated below.
 
 **Examples**
 
-* See sphx glr auto examples neighbors plot lof outlier detection.py
+* See 
   for an illustration of the use of `neighbors.LocalOutlierFactor`.
 
-* See sphx glr auto examples miscellaneous plot anomaly comparison.py
+* See 
   for a comparison with other anomaly detection methods.
 
 **References**
@@ -372,4 +370,4 @@ The scores of abnormality of the training samples are always accessible
 through the `negative_outlier_factor_` attribute.
 
 Novelty detection with `neighbors.LocalOutlierFactor` is illustrated below
-(see sphx glr auto examples neighbors plot lof novelty detection.py).
+(see ).
