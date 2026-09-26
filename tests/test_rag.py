@@ -4,7 +4,6 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import anthropic
-import httpx
 import joblib
 import pytest
 
@@ -110,12 +109,14 @@ def test_on_topic_question_passes_threshold(tfidf_store):
 
 def test_claude_api_failure_is_reported(tfidf_store, fake_key, monkeypatch):
     def fail(*args, **kwargs):
-        raise anthropic.APIConnectionError(request=httpx.Request("POST", "https://example.test"))
+        # the base class of every SDK error; constructing a specific one needs the SDK's
+        # HTTP client types, which differ between anthropic 0.x (httpx) and 1.x (httpx2)
+        raise anthropic.AnthropicError("connection failed")
 
     monkeypatch.setattr(generate, "synthesize", fail)
     result = answer(LEAKAGE_Q, store=tfidf_store)
     assert result["mode"] == "extractive"
-    assert "APIConnectionError" in result["note"]
+    assert "AnthropicError: connection failed" in result["note"]
     # the key *is* set, so don't tell the user to set it
     assert "Set ANTHROPIC_API_KEY" not in result["answer"]
 
