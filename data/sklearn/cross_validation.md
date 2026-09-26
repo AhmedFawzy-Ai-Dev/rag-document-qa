@@ -287,12 +287,12 @@ section.
 
 **Examples**
 
-* sphx glr auto examples model selection plot roc crossval.py,
-* sphx glr auto examples feature selection plot rfe with cross validation.py,
-* sphx glr auto examples model selection plot grid search digits.py,
-* sphx glr auto examples model selection plot grid search text feature extraction.py,
-* sphx glr auto examples model selection plot cv predict.py,
-* sphx glr auto examples model selection plot nested cross validation iris.py.
+* ,
+* ,
+* ,
+* ,
+* ,
+* .
 
 ## Cross validation iterators
 
@@ -921,10 +921,6 @@ using brute force and internally fits `(n_permutations + 1) * n_cv` models.
 It is therefore only tractable with small datasets for which fitting an
 individual model is very fast. Using the `n_jobs` parameter parallelizes the
 computation and thus speeds it up.
-
-**Examples**
-
-* sphx glr auto examples model selection plot permutation tests for classification.py
 
 **References**
 * Ojala and Garriga. Permutation Tests for Studying Classifier Performance.

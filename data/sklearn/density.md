@@ -128,12 +128,12 @@ probabilistically drawn given the KDE model.
 
 **Examples**
 
-* sphx glr auto examples neighbors plot kde 1d.py: computation of simple kernel
+* computation of simple kernel
   density estimates in one dimension.
 
-* sphx glr auto examples neighbors plot digits kde sampling.py: an example of using
+* an example of using
   Kernel Density estimation to learn a generative model of the hand-written
   digits data, and drawing new samples from this model.
 
-* sphx glr auto examples neighbors plot species kde.py: an example of Kernel Density
+* an example of Kernel Density
   estimation using the Haversine distance metric to visualize geospatial data

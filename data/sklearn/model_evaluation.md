@@ -525,7 +525,7 @@ In the multilabel case with binary label indicators:
 
 **Examples**
 
-* See sphx glr auto examples model selection plot permutation tests for classification.py
+* See 
   for an example of accuracy score usage using permutations of
   the dataset.
 
@@ -679,7 +679,7 @@ array([[2, 0, 0],
 
 `ConfusionMatrixDisplay` can be used to visually represent a confusion
 matrix as shown in the
-sphx glr auto examples model selection plot confusion matrix.py
+
 example, which creates the following figure:
 
 The parameter `normalize` allows to report ratios instead of counts. The
@@ -728,15 +728,15 @@ Note that the thresholds consist of distinct `y_score` values, in decreasing ord
 
 **Examples**
 
-* See sphx glr auto examples model selection plot confusion matrix.py
+* See 
   for an example of using a confusion matrix to evaluate classifier output
   quality.
 
-* See sphx glr auto examples classification plot digits classification.py
+* See 
   for an example of using a confusion matrix to classify
   hand-written digits.
 
-* See sphx glr auto examples text plot document classification 20newsgroups.py
+* See 
   for an example of using a confusion matrix to classify text
   documents.
 
@@ -766,11 +766,11 @@ weighted avg       0.67      0.60      0.59         5
 
 **Examples**
 
-* See sphx glr auto examples classification plot digits classification.py
+* See 
   for an example of classification report usage for
   hand-written digits.
 
-* See sphx glr auto examples model selection plot grid search digits.py
+* See 
   for an example of classification report usage for
   grid search with nested cross-validation.
 
@@ -874,11 +874,11 @@ precision-recall curve as follows.
 
 **Examples**
 
-* See sphx glr auto examples model selection plot grid search digits.py
+* See 
   for an example of `precision_score` and `recall_score` usage
   to estimate parameters using grid search with nested cross-validation.
 
-* See sphx glr auto examples model selection plot precision recall.py
+* See 
   for an example of `precision_recall_curve` usage to evaluate
   classifier output quality.
 
@@ -1575,13 +1575,13 @@ And the decision values do not require such processing.
 
 **Examples**
 
-* See sphx glr auto examples model selection plot roc.py for an example of
+* See  for an example of
   using ROC to evaluate the quality of the output of a classifier.
 
-* See sphx glr auto examples model selection plot roc crossval.py  for an
+* See   for an
   example of using ROC to evaluate classifier output quality, using cross-validation.
 
-* See sphx glr auto examples applications plot species distribution modeling.py
+* See 
   for an example of using ROC to model species distribution.
 
 **References**
@@ -1647,7 +1647,7 @@ better suited.
 
 **Examples**
 
-* See sphx glr auto examples model selection plot det.py
+* See 
   for an example comparison between receiver operating characteristic (ROC)
   curves and Detection error tradeoff (DET) curves.
 
@@ -1702,7 +1702,7 @@ set [0,1] has an error:
 
 **Examples**
 
-* See sphx glr auto examples feature selection plot rfe with cross validation.py
+* See 
   for an example of zero one loss usage to perform recursive feature
   elimination with cross-validation.
 
@@ -1778,7 +1778,7 @@ model with much more discriminatory power, e.g. using many more features.
 
 **Examples**
 
-* See sphx glr auto examples calibration plot calibration.py
+* See 
   for an example of Brier score loss usage to perform probability
   calibration of classifiers.
 
@@ -1832,10 +1832,6 @@ Notice that probabilities differ from counts, for instance
 $\operatorname{PR}(P+|T+)$ is not equal to the number of true positive
 counts `tp` (see the wikipedia page for
 the actual formulas).
-
-**Examples**
-
-* sphx glr auto examples model selection plot likelihood ratios.py
 
 **Interpretation across varying prevalence**
 Both class likelihood ratios are interpretable in terms of an odds ratio
@@ -2302,7 +2298,7 @@ nan
 
 **Examples**
 
-* See sphx glr auto examples linear model plot lasso and elasticnet.py
+* See 
   for an example of R² score usage to
   evaluate Lasso and Elastic Net on sparse signals.
 
@@ -2371,7 +2367,7 @@ function:
 
 **Examples**
 
-* See sphx glr auto examples ensemble plot gradient boosting regression.py
+* See 
   for an example of mean squared error usage to evaluate gradient boosting regression.
 
 Taking the square root of the MSE, called the root mean squared error (RMSE), is another
@@ -2716,7 +2712,7 @@ explained in the example linked below.
 
 **Examples**
 
-* See sphx glr auto examples ensemble plot gradient boosting quantile.py
+* See 
   for an example of using the pinball loss to evaluate and tune the
   hyper-parameters of quantile regression models on data with non-symmetric
   noise and outliers.
@@ -2865,7 +2861,7 @@ display.
 
 **Examples**
 
-* See sphx glr auto examples compose plot transformed target.py for
+* See  for
   an example on how to use `PredictionErrorDisplay`
   to visualize the prediction quality improvement of a regression model
   obtained by transforming the target before learning.

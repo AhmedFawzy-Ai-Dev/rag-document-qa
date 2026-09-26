@@ -103,12 +103,6 @@ The `SelectPercentile` and `SelectKBest` support unsupervised
 feature selection as well. One needs to provide a `score_func` where `y=None`.
 The `score_func` should use internally `X` to compute the scores.
 
-**Examples**
-
-* sphx glr auto examples feature selection plot feature selection.py
-
-* sphx glr auto examples feature selection plot f test vs mi.py
-
 ## Recursive feature elimination
 
 Given an external estimator that assigns weights to features (e.g., the
@@ -132,10 +126,10 @@ features that maximize the cross-validation score.
 
 **Examples**
 
-* sphx glr auto examples feature selection plot rfe digits.py: A recursive feature elimination example
+* A recursive feature elimination example
   showing the relevance of pixels in a digit classification task.
 
-* sphx glr auto examples feature selection plot rfe with cross validation.py: A recursive feature
+* A recursive feature
   elimination example with automatic tuning of the number of features
   selected with cross-validation.
 
@@ -153,10 +147,6 @@ Available heuristics are "mean", "median" and float multiples of these like
 `max_features` parameter to set a limit on the number of features to select.
 
 For examples on how it is to be used refer to the sections below.
-
-**Examples**
-
-* sphx glr auto examples feature selection plot select from model diabetes.py
 
 ### L1-based feature selection
 
@@ -189,7 +179,7 @@ alpha parameter, the fewer features selected.
 
 **Examples**
 
-* sphx glr auto examples linear model plot lasso dense vs sparse data.py.
+* .
 
 **L1-recovery and compressive sensing**
 For a good choice of alpha, the lasso can fully recover the
@@ -203,7 +193,7 @@ structure of the design matrix X. In addition, the design matrix must
 display certain specific properties, such as not being too correlated.
 On the use of Lasso for sparse signal recovery, see this example on
 compressive sensing:
-sphx glr auto examples applications plot tomography l1 reconstruction.py.
+.
 
 There is no general rule to select an alpha parameter for recovery of
 non-zero coefficients. It can be set by cross-validation
@@ -246,10 +236,10 @@ array([ 0.04,  0.05,  0.4,  0.4])
 
 **Examples**
 
-* sphx glr auto examples ensemble plot forest importances.py: example on
+* example on
   synthetic data showing the recovery of the actually meaningful features.
 
-* sphx glr auto examples inspection plot permutation importance.py: example
+* example
   discussing the caveats of using impurity-based feature importances as a proxy for
   feature relevance.
 
@@ -293,10 +283,6 @@ fit and requires no iterations.
 **References**
 
 [sfs] Ferri et al, Comparative study of techniques for large-scale feature selection.
-
-**Examples**
-
-* sphx glr auto examples feature selection plot select from model diabetes.py
 
 ## Feature selection as part of a pipeline
 

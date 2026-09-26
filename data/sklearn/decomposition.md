@@ -28,12 +28,6 @@ probabilistic interpretation of the PCA that can give a likelihood of
 data based on the amount of variance it explains. As such it implements a
 score method that can be used in cross-validation:
 
-**Examples**
-
-* sphx glr auto examples decomposition plot pca iris.py
-* sphx glr auto examples decomposition plot pca vs lda.py
-* sphx glr auto examples decomposition plot pca vs fa model selection.py
-
 ### Incremental PCA
 
 The `PCA` object is very useful, but has certain limitations for
@@ -58,10 +52,6 @@ number of samples to be processed in the dataset.
 
 As in `PCA`, `IncrementalPCA` centers but does not scale the
 input data for each feature before applying the SVD.
-
-**Examples**
-
-* sphx glr auto examples decomposition plot incremental pca.py
 
 ### PCA using randomized SVD
 
@@ -108,11 +98,6 @@ $2 \cdot n_{\max} \cdot n_{\mathrm{components}}$ instead of $n_{\max}
 Note: the implementation of `inverse_transform` in `PCA` with
 `svd_solver='randomized'` is not the exact inverse transform of
 `transform` even when `whiten=False` (default).
-
-**Examples**
-
-* sphx glr auto examples applications plot face recognition.py
-* sphx glr auto examples decomposition plot faces decomposition.py
 
 **References**
 
@@ -188,10 +173,6 @@ While in the spirit of an online algorithm, the class
 the algorithm is online along the features direction, not the samples
 direction.
 
-**Examples**
-
-* sphx glr auto examples decomposition plot faces decomposition.py
-
 **References**
 
 [Mrl09] "Online Dictionary Learning for Sparse Coding" J. Mairal, F. Bach, J. Ponce, G. Sapiro, 2009
@@ -212,11 +193,6 @@ function mapping samples from the PCA basis into the original feature
 space [Bakir2003]. Thus, the reconstruction obtained with
 `KernelPCA.inverse_transform` is an approximation. See the example
 linked below for more details.
-
-**Examples**
-
-* sphx glr auto examples decomposition plot kernel pca.py
-* sphx glr auto examples applications plot digits denoising.py
 
 **References**
 
@@ -344,10 +320,6 @@ should be turned on (`sublinear_tf=True, use_idf=True`)
 to bring the feature values closer to a Gaussian distribution,
 compensating for LSA's erroneous assumptions about textual data.
 
-**Examples**
-
-* sphx glr auto examples text plot document clustering.py
-
 **References**
 
 * Christopher D. Manning, Prabhakar Raghavan and Hinrich Schütze (2008),
@@ -396,10 +368,6 @@ and is constructed using the following rule: First, the regular code of length
 filled with the positive part of the regular code vector. The second half of
 the split code is filled with the negative part of the code vector, only with
 a positive sign. Therefore, the split_code is non-negative.
-
-**Examples**
-
-* sphx glr auto examples decomposition plot sparse coding.py
 
 ### Generic dictionary learning
 
@@ -470,14 +438,10 @@ dictionary. For instance the `MiniBatchKMeans` estimator is
 computationally efficient and implements on-line learning with a
 `partial_fit` method.
 
-Example: sphx glr auto examples cluster plot dict face patches.py
+Example:
 
 The following image shows how a dictionary, learned from 4x4 pixel image patches
 extracted from part of the image of a raccoon face, looks like.
-
-**Examples**
-
-* sphx glr auto examples decomposition plot image denoising.py
 
 ## Factor Analysis
 
@@ -556,11 +520,6 @@ Varimax rotation maximizes the sum of the variances of the squared loadings,
 i.e., it tends to produce sparser factors, which are influenced by only a few
 features each (the "simple structure"). See e.g., the first example below.
 
-**Examples**
-
-* sphx glr auto examples decomposition plot varimax fa.py
-* sphx glr auto examples decomposition plot pca vs fa model selection.py
-
 ## Independent component analysis (ICA)
 
 Independent component analysis separates a multivariate signal into
@@ -579,12 +538,6 @@ ICA can also be used as yet another non linear decomposition that finds
 components with some sparsity:
 
 **|pca_img4| |ica_img4|**
-
-**Examples**
-
-* sphx glr auto examples decomposition plot ica blind source separation.py
-* sphx glr auto examples decomposition plot ica vs pca.py
-* sphx glr auto examples decomposition plot faces decomposition.py
 
 ## Non-negative matrix factorization (NMF or NNMF)
 
@@ -725,11 +678,6 @@ stored components:
 >>> W_new = model.transform(X_new)
 ```
 
-**Examples**
-
-* sphx glr auto examples decomposition plot faces decomposition.py
-* sphx glr auto examples applications plot topics extraction with nmf lda.py
-
 ### Mini-batch Non Negative Matrix Factorization
 
 `MiniBatchNMF` [7] implements a faster, but less accurate version of the
@@ -844,10 +792,6 @@ can be calculated from `transform` method.
 
 `LatentDirichletAllocation` also implements `partial_fit` method. This is used
 when data can be fetched sequentially.
-
-**Examples**
-
-* sphx glr auto examples applications plot topics extraction with nmf lda.py
 
 **References**
 

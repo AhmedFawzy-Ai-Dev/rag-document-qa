@@ -44,10 +44,10 @@ full covariance.
 
 **Examples**
 
-* See sphx glr auto examples mixture plot gmm covariances.py for an example of
+* See  for an example of
   using the Gaussian mixture as clustering on the iris dataset.
 
-* See sphx glr auto examples mixture plot gmm pdf.py for an example on plotting the
+* See  for an example on plotting the
   density estimation.
 
 **Pros and cons of class GaussianMixture**
@@ -82,7 +82,7 @@ model.
 
 **Examples**
 
-* See sphx glr auto examples mixture plot gmm selection.py for an example
+* See  for an example
   of model selection performed with classical Gaussian mixture.
 
 **Estimation algorithm expectation-maximization**
@@ -128,7 +128,7 @@ random
 
 **Examples**
 
-* See sphx glr auto examples mixture plot gmm init.py for an example of
+* See  for an example of
   using different initializations in Gaussian Mixture.
 
 ## Variational Bayesian Gaussian Mixture
@@ -200,15 +200,15 @@ from the two resulting mixtures.
 
 **Examples**
 
-* See sphx glr auto examples mixture plot gmm.py for an example on
+* See  for an example on
   plotting the confidence ellipsoids for both `GaussianMixture`
   and `BayesianGaussianMixture`.
 
-* sphx glr auto examples mixture plot gmm sin.py shows using
+*  shows using
   `GaussianMixture` and `BayesianGaussianMixture` to fit a
   sine wave.
 
-* See sphx glr auto examples mixture plot concentration prior.py
+* See 
   for an example plotting the confidence ellipsoids for the
   `BayesianGaussianMixture` with different
   `weight_concentration_prior_type` for different values of the parameter

@@ -23,7 +23,3 @@ $\hat{y}_i$ for the training data which are the closest to the targets
 $y$ in terms of mean squared error. These predictions are interpolated
 for predicting to unseen data. The predictions of `IsotonicRegression`
 thus form a function that is piecewise linear:
-
-**Examples**
-
-* sphx glr auto examples miscellaneous plot isotonic regression.py

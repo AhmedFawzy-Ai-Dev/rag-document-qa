@@ -22,10 +22,6 @@ Semi-supervised algorithms need to make assumptions about the distribution
 of the dataset in order to achieve performance gains. See here
 for more details.
 
-**Examples**
-
-* sphx glr auto examples semi supervised plot semi supervised newsgroups.py
-
 ## Self Training
 
 This self-training implementation is based on Yarowsky's [1] algorithm. Using
@@ -51,11 +47,6 @@ until all samples have labels or no new samples are selected in that iteration.
 **Note:**
 When using the self-training classifier, the
 calibration of the classifier is important.
-
-**Examples**
-
-* sphx glr auto examples semi supervised plot self training varying threshold.py
-* sphx glr auto examples semi supervised plot semi supervised versus svm iris.py
 
 **References**
 
@@ -113,13 +104,6 @@ performing a full matrix multiplication calculation for each iteration of the
 algorithm can lead to prohibitively long running times. On the other hand,
 the KNN kernel will produce a much more memory-friendly sparse matrix
 which can drastically reduce running times.
-
-**Examples**
-
-* sphx glr auto examples semi supervised plot semi supervised versus svm iris.py
-* sphx glr auto examples semi supervised plot label propagation structure.py
-* sphx glr auto examples semi supervised plot label propagation digits.py
-* sphx glr auto examples semi supervised plot label propagation digits active learning.py
 
 **References**
 

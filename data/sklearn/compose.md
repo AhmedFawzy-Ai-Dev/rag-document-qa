@@ -183,16 +183,6 @@ ignored by setting them to `'passthrough'`:
 **See also:**
 * composite grid search
 
-**Examples**
-
-* sphx glr auto examples feature selection plot feature selection pipeline.py
-* sphx glr auto examples model selection plot grid search text feature extraction.py
-* sphx glr auto examples compose plot digits pipe.py
-* sphx glr auto examples miscellaneous plot kernel approximation.py
-* sphx glr auto examples svm plot svm anova.py
-* sphx glr auto examples compose plot compare reduction.py
-* sphx glr auto examples miscellaneous plot pipeline display.py
-
 ### Caching transformers: avoid repeated computation
 
 Fitting transformers may be computationally expensive. With its
@@ -264,10 +254,6 @@ Pipeline(memory=...,
 >>> # Remove the cache directory
 >>> rmtree(cachedir)
 ```
-
-**Examples**
-
-* sphx glr auto examples compose plot compare reduction.py
 
 ## Transforming target in regression
 
@@ -349,10 +335,6 @@ The transformation can be triggered by setting either `transformer` or the
 pair of functions `func` and `inverse_func`. However, setting both
 options will raise an error.
 
-**Examples**
-
-* sphx glr auto examples compose plot transformed target.py
-
 ## FeatureUnion: composite feature spaces
 
 `FeatureUnion` combines several transformer objects into a new
@@ -406,10 +388,6 @@ and ignored by setting to `'drop'`:
 FeatureUnion(transformer_list=[('linear_pca', PCA()),
                                ('kernel_pca', 'drop')])
 ```
-
-**Examples**
-
-* sphx glr auto examples compose plot feature union.py
 
 ## ColumnTransformer for heterogeneous data
 
@@ -602,7 +580,7 @@ to 'text':
 
 An example of the HTML output can be seen in the
 **HTML representation of Pipeline** section of
-sphx glr auto examples compose plot column transformer mixed types.py.
+.
 As an alternative, the HTML can be written to a file using
 `estimator_html_repr`:
 
@@ -611,8 +589,3 @@ As an alternative, the HTML can be written to a file using
 >>> with open('my_estimator.html', 'w') as f:  # doctest: +SKIP
 ...     f.write(estimator_html_repr(clf))
 ```
-
-**Examples**
-
-* sphx glr auto examples compose plot column transformer.py
-* sphx glr auto examples compose plot column transformer mixed types.py

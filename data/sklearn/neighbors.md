@@ -176,7 +176,7 @@ distance can be supplied to compute the weights.
 
 **Examples**
 
-* sphx glr auto examples neighbors plot classification.py: an example of
+* an example of
   classification using nearest neighbors.
 
 ## Nearest Neighbors Regression
@@ -205,16 +205,16 @@ Alternatively, a user-defined function of the distance can be supplied,
 which will be used to compute the weights.
 
 The use of multi-output nearest neighbors for regression is demonstrated in
-sphx glr auto examples miscellaneous plot multioutput face completion.py. In this example, the inputs
+. In this example, the inputs
 X are the pixels of the upper half of faces and the outputs Y are the pixels of
 the lower half of those faces.
 
 **Examples**
 
-* sphx glr auto examples neighbors plot regression.py: an example of regression
+* an example of regression
   using nearest neighbors.
 
-* sphx glr auto examples miscellaneous plot multioutput face completion.py:
+* 
   an example of multi-output regression using nearest neighbors.
 
 ## Nearest Neighbor Algorithms
@@ -469,7 +469,7 @@ the model from 0.81 to 0.82.
 
 **Examples**
 
-* sphx glr auto examples neighbors plot nearest centroid.py: an example of
+* an example of
   classification using nearest centroid with different shrink thresholds.
 
 ## Nearest Neighbors Transformer
@@ -554,12 +554,12 @@ unnecessary neighbors will be filtered by following estimators.
 
 **Examples**
 
-* sphx glr auto examples neighbors approximate nearest neighbors.py:
+* 
   an example of pipelining `KNeighborsTransformer` and
   `TSNE`. Also proposes two custom nearest neighbors
   estimators based on external packages.
 
-* sphx glr auto examples neighbors plot caching nearest neighbors.py:
+* 
   an example of pipelining `KNeighborsTransformer` and
   `KNeighborsClassifier` to enable caching of the neighbors graph
   during a hyper-parameter grid-search.
@@ -646,12 +646,6 @@ classification accuracy is computed on the 2-dimensional projected points found
 by each method. Each data sample belongs to one of 10 classes.
 
 **|nca_dim_reduction_1| |nca_dim_reduction_2| |nca_dim_reduction_3|**
-
-**Examples**
-
-* sphx glr auto examples neighbors plot nca classification.py
-* sphx glr auto examples neighbors plot nca dim reduction.py
-* sphx glr auto examples manifold plot lle digits.py
 
 ### Mathematical formulation
 

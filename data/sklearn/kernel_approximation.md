@@ -83,10 +83,10 @@ also the dimensionality of the features computed - is given by the parameter
 **Examples**
 
 * See the example entitled
-  sphx glr auto examples applications plot cyclical feature engineering.py,
+  ,
   that shows an efficient machine learning pipeline that uses a
   `Nystroem` kernel.
-* See sphx glr auto examples miscellaneous plot kernel approximation.py
+* See 
   for a comparison of `Nystroem` kernel with `RBFSampler`.
 
 ## Radial Basis Function Kernel
@@ -133,7 +133,7 @@ Comparing an exact RBF kernel (left) with the approximation (right)
 
 **Examples**
 
-* See sphx glr auto examples miscellaneous plot kernel approximation.py for a
+* See  for a
   comparison of `Nystroem` kernel with `RBFSampler`.
 
 ## Additive Chi Squared Kernel
@@ -219,10 +219,6 @@ In addition, this method can transform samples in
 $\mathcal{O}(n_{\text{samples}}(n_{\text{features}} + n_{\text{components}} \log(n_{\text{components}})))$
 time, where $n_{\text{components}}$ is the desired output dimension,
 determined by `n_components`.
-
-**Examples**
-
-* sphx glr auto examples kernel approximation plot scalable poly kernels.py
 
 ## Mathematical Details
 

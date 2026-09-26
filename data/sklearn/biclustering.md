@@ -128,11 +128,11 @@ and the remaining `n_columns` labels provide the column partitioning.
 
 **Examples**
 
-* sphx glr auto examples bicluster plot spectral coclustering.py: A simple example
+* A simple example
   showing how to generate a data matrix with biclusters and apply
   this method to it.
 
-* sphx glr auto examples bicluster plot bicluster newsgroups.py: An example of finding
+* An example of finding
   biclusters in the twenty newsgroup dataset.
 
 **References**
@@ -207,7 +207,7 @@ clustering this $n \times q$ matrix yields the column labels.
 
 **Examples**
 
-* sphx glr auto examples bicluster plot spectral biclustering.py: a simple example
+* a simple example
   showing how to generate a checkerboard matrix and bicluster it.
 
 **References**

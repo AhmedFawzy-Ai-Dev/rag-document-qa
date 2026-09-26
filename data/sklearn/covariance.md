@@ -34,7 +34,7 @@ be centered by the user, or `assume_centered=False` should be used.
 
 **Examples**
 
-* See sphx glr auto examples covariance plot covariance estimation.py for
+* See  for
   an example on how to fit an `EmpiricalCovariance` object to data.
 
 ## Shrunk Covariance
@@ -71,7 +71,7 @@ bias/variance trade-off, and is discussed below.
 
 **Examples**
 
-* See sphx glr auto examples covariance plot covariance estimation.py for
+* See  for
   an example on how to fit a `ShrunkCovariance` object to data.
 
 ### Ledoit-Wolf shrinkage
@@ -104,7 +104,7 @@ matrix, the Ledoit-Wolf solution is indeed a reasonable estimate.
 
 **Examples**
 
-* See sphx glr auto examples covariance plot covariance estimation.py for
+* See  for
   an example on how to fit a `LedoitWolf` object to data and
   for visualizing the performances of the Ledoit-Wolf estimator in
   terms of likelihood.
@@ -135,10 +135,10 @@ choices of Ledoit-Wolf and OAS estimators
 
 **Examples**
 
-* See sphx glr auto examples covariance plot covariance estimation.py for
+* See  for
   an example on how to fit an `OAS` object to data.
 
-* See sphx glr auto examples covariance plot lw vs oas.py to visualize the
+* See  to visualize the
   Mean Squared Error difference between a `LedoitWolf` and
   an `OAS` estimator of the covariance.
 
@@ -206,11 +206,11 @@ paper. It is the same algorithm as in the R `glasso` package.
 
 **Examples**
 
-* sphx glr auto examples covariance plot sparse cov.py: example on synthetic
+* example on synthetic
   data showing some recovery of a structure, and comparing to other
   covariance estimators.
 
-* sphx glr auto examples applications plot stock market.py: example on real
+* example on real
   stock market data, finding which symbols are most linked.
 
 **References**
@@ -265,11 +265,11 @@ attributes of a `MinCovDet` robust covariance estimator object.
 
 **Examples**
 
-* See sphx glr auto examples covariance plot robust vs empirical covariance.py for
+* See  for
   an example on how to fit a `MinCovDet` object to data and see how
   the estimate remains accurate despite the presence of outliers.
 
-* See sphx glr auto examples covariance plot mahalanobis distances.py to
+* See  to
   visualize the difference between `EmpiricalCovariance` and
   `MinCovDet` covariance estimators in terms of Mahalanobis distance
   (so we get a better estimate of the precision matrix too).

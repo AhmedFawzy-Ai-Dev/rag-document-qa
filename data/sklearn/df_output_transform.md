@@ -93,4 +93,4 @@ To return to the default, simply run:
 ```
 
 A more detailed example can be found in
-sphx glr auto examples miscellaneous plot set output.py.
+.

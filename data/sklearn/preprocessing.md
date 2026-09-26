@@ -7,11 +7,11 @@ utility functions and transformer classes to change raw feature vectors
 into a representation that is more suitable for the downstream estimators.
 
 In general, many learning algorithms such as linear models benefit from standardization of the data set
-(see sphx glr auto examples preprocessing plot scaling importance.py).
+(see ).
 If some outliers are present in the set, robust scalers or other transformers can
 be more appropriate. The behaviors of the different scalers, transformers, and
 normalizers on a dataset containing marginal outliers are highlighted in
-sphx glr auto examples preprocessing plot all scaling.py.
+.
 
 ## Standardization, or mean removal and variance scaling
 
@@ -980,11 +980,6 @@ as another category and encodes them like any other category. Categories
 that are not seen during `fit` are encoded with the target mean, i.e.
 `target_mean_`.
 
-**Examples**
-
-* sphx glr auto examples preprocessing plot target encoder.py
-* sphx glr auto examples preprocessing plot target encoder cross val.py
-
 **References**
 
 [MIC] Micci-Barreca, Daniele. "A preprocessing scheme for high-cardinality categorical attributes in classification and prediction problems" SIGKDD Explor. Newsl. 3, 1 (July 2001), 27-32.
@@ -1067,12 +1062,6 @@ For instance, we can use the Pandas function `pandas.cut`:
 ['infant', 'kid', 'teen', 'adult', 'senior citizen']
 Categories (5, str): ['infant' < 'kid' < 'teen' < 'adult' < 'senior citizen']
 ```
-
-**Examples**
-
-* sphx glr auto examples preprocessing plot discretization.py
-* sphx glr auto examples preprocessing plot discretization classification.py
-* sphx glr auto examples preprocessing plot discretization strategies.py
 
 ### Feature binarization
 
@@ -1190,7 +1179,7 @@ $(1, X_1, X_2, X_3, X_1X_2, X_1X_3, X_2X_3, X_1X_2X_3)$.
 Note that polynomial features are used implicitly in kernel methods (e.g., `SVC`,
 `KernelPCA`) when using polynomial svm kernels.
 
-See sphx glr auto examples linear model plot polynomial interpolation.py
+See 
 for Ridge regression using created polynomial features.
 
 ### Spline transformer
@@ -1256,11 +1245,6 @@ Interestingly, a `SplineTransformer` of `degree=0` is the same as
 `encode='onehot-dense'` and `n_bins = n_knots - 1` if
 `knots = strategy`.
 
-**Examples**
-
-* sphx glr auto examples linear model plot polynomial interpolation.py
-* sphx glr auto examples applications plot cyclical feature engineering.py
-
 **References**
 * Eilers, P., & Marx, B. (1996). Flexible Smoothing with B-splines and
   Penalties. Statist. Sci. 11 (1996), no. 2, 89--121.
@@ -1300,5 +1284,5 @@ error with a `filterwarnings`:
 
 For a full code example that demonstrates using a `FunctionTransformer`
 to extract features from text data see
-sphx glr auto examples compose plot column transformer.py and
-sphx glr auto examples applications plot cyclical feature engineering.py.
+ and
+.

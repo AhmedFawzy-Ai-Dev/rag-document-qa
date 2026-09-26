@@ -148,8 +148,8 @@ to refit the model when calling `fit`, wrap your sub-estimator with a
 ### Examples
 
 - See the example entitled
-  sphx glr auto examples model selection plot tuned decision threshold.py,
+  ,
   to get insights on the post-tuning of the decision threshold.
 - See the example entitled
-  sphx glr auto examples model selection plot cost sensitive learning.py,
+  ,
   to learn about cost-sensitive learning and decision threshold tuning.

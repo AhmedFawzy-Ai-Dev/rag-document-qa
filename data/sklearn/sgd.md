@@ -182,10 +182,6 @@ algorithm, available as a solver in `LogisticRegression`.
 
 **Examples**
 
-- sphx glr auto examples linear model plot sgd separating hyperplane.py
-- sphx glr auto examples linear model plot sgd iris.py
-- sphx glr auto examples linear model plot sgd weighted samples.py
-- sphx glr auto examples svm plot separating hyperplane unbalanced.py
   (See the Note in the example)
 
 ## Regression
@@ -219,10 +215,6 @@ description above in the classification section).
 For regression with a squared loss and a $L_2$ penalty, another variant of
 SGD with an averaging strategy is available with Stochastic Average
 Gradient (SAG) algorithm, available as a solver in `Ridge`.
-
-**Examples**
-
-- sphx glr auto examples applications plot prediction latency.py
 
 ## Online One-Class SVM
 
@@ -275,10 +267,6 @@ optimization loop.
 As `SGDClassifier` and `SGDRegressor`, `SGDOneClassSVM`
 supports averaged SGD. Averaging can be enabled by setting `average=True`.
 
-**Examples**
-
-- sphx glr auto examples linear model plot sgdocsvm vs ocsvm.py
-
 ## Stochastic Gradient Descent for sparse data
 
 **Note:**
@@ -289,10 +277,6 @@ There is built-in support for sparse data given in any matrix in a format
 supported by scipy.sparse. For maximum
 efficiency, however, use the CSR
 matrix format as defined in scipy.sparse.csr_matrix.
-
-**Examples**
-
-- sphx glr auto examples text plot document classification 20newsgroups.py
 
 ## Complexity
 
@@ -325,7 +309,7 @@ when the criterion does not improve `n_iter_no_change` times in a row. The
 improvement is evaluated with absolute tolerance `tol`, and the algorithm
 stops in any case after a maximum number of iterations `max_iter`.
 
-See sphx glr auto examples linear model plot sgd early stopping.py for an
+See  for an
 example of the effects of early stopping.
 
 ## Tips on Practical Use

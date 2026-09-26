@@ -189,11 +189,6 @@ of external libraries and is more compact:
     |   |   |--- class: 2
     <BLANKLINE>
 
-**Examples**
-
-* sphx glr auto examples tree plot iris dtc.py
-* sphx glr auto examples tree plot unveil tree structure.py
-
 ## Regression
 
 Decision trees can also be applied to regression problems, using the
@@ -212,10 +207,6 @@ instead of integer values:
 >>> clf.predict([[1, 1]])
 array([0.5])
 ```
-
-**Examples**
-
-* sphx glr auto examples tree plot tree regression.py
 
 ## Multi-output problems
 
@@ -249,17 +240,13 @@ of shape `(n_samples, n_outputs)` then the resulting estimator will:
   `predict_proba`.
 
 The use of multi-output trees for regression is demonstrated in
-sphx glr auto examples tree plot tree regression.py. In this example, the input
+. In this example, the input
 X is a single real value and the outputs Y are the sine and cosine of X.
 
 The use of multi-output trees for classification is demonstrated in
-sphx glr auto examples miscellaneous plot multioutput face completion.py. In this example, the inputs
+. In this example, the inputs
 X are the pixels of the upper half of faces and the outputs Y are the pixels of
 the lower half of those faces.
-
-**Examples**
-
-* sphx glr auto examples miscellaneous plot multioutput face completion.py
 
 **References**
 
@@ -326,7 +313,7 @@ $\mathcal{O}(\log(n_{samples}))$.
   ICA, or feature selection) beforehand to
   give your tree a better chance of finding features that are discriminative.
 
-* sphx glr auto examples tree plot unveil tree structure.py will help
+*  will help
   in gaining more insights about how the decision tree makes predictions, which is
   important for understanding the important features in the data.
 
@@ -687,10 +674,6 @@ $\alpha_{eff}(t)=\frac{R(t)-R(T_t)}{T-1}$. A non-terminal node
 with the smallest value of $\alpha_{eff}$ is the weakest link and will
 be pruned. This process stops when the pruned tree's minimal
 $\alpha_{eff}$ is greater than the `ccp_alpha` parameter.
-
-**Examples**
-
-* sphx glr auto examples tree plot cost complexity pruning.py
 
 **References**
 

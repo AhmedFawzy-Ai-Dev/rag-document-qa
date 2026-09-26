@@ -181,7 +181,7 @@ tree-based models).
 
 The following example highlights the limitations of impurity-based feature
 importance in contrast to permutation-based feature importance:
-sphx glr auto examples inspection plot permutation importance.py.
+.
 
 ## Misleading values on strongly correlated features
 
@@ -199,12 +199,7 @@ One way to handle the issue is to cluster features that are correlated and only
 keep one feature from each cluster.
 
 For more details on such strategy, see the example
-sphx glr auto examples inspection plot permutation importance multicollinear.py.
-
-**Examples**
-
-* sphx glr auto examples inspection plot permutation importance.py
-* sphx glr auto examples inspection plot permutation importance multicollinear.py
+.
 
 **References**
 

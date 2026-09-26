@@ -59,7 +59,7 @@ array([ 7894,  9868, 11841])
 
 **Examples**
 
-* See sphx glr auto examples miscellaneous plot johnson lindenstrauss bound.py
+* See 
   for a theoretical explication on the Johnson-Lindenstrauss lemma and an
   empirical validation using sparse random matrices.
 

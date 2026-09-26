@@ -14,6 +14,18 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000)
 
+**Highlights**
+
+- **Measured on 100 labeled questions** about the scikit-learn user guide:
+  retrieval MRR **0.70 → 0.85**, and the right section in the top 5 for
+  **93%** of questions (80% with the TF-IDF baseline).
+- **Hybrid search** (BM25 + dense embeddings, rank fusion) and a
+  **cross-encoder reranker** that also filters off-topic questions.
+- **Verified citations** via Claude's Citations API: every `[n]` quotes the
+  exact sentence it relies on.
+- **Streaming chat UI** with follow-up questions and **PDF upload**, deployable
+  to a Hugging Face Space with one command.
+
 ---
 
 ## What it does
@@ -62,10 +74,10 @@ potential gain. [...]
 [mode: extractive]
 
 Sources (most relevant first):
-  [1] ensemble.md  (score 5.1687)
-  [2] ensemble.md  (score 5.1496)
+  [1] ensemble.md  (score 5.5883)
+  [2] ensemble.md  (score 5.346)
   [3] ensemble.md  (score 3.6404)
-  [4] ensemble.md  (score 3.0114)
+  [4] ensemble.md  (score 3.6108)
 ```
 
 Keyword search alone (BM25, what you get without the `transformer` extra) ranks
@@ -197,6 +209,23 @@ drops questions that share no words with the docs. Tune it with `RAG_MIN_SCORE`.
 | `RAG_DOCS_DIR` | `<data dir>/sklearn` | the documents to index |
 | `RAG_DATA_DIR` | `<repo>/data` | folder holding the corpus, eval set and `index.joblib`; set it when installed with a regular `pip install .` |
 
+## Deploy the demo to Hugging Face Spaces
+
+```bash
+pip install -e ".[transformer]" huggingface_hub
+python -m docqa.ingest                                   # the hybrid index the Space will serve
+huggingface-cli login                                    # a token with write access
+python scripts/deploy_space.py --space YOUR_NAME/ask-sklearn-docs --set-secret
+```
+
+The script uploads the app, the package, the corpus and the prebuilt index (so
+the Space doesn't re-embed the guide on every restart), with pinned
+requirements (`deploy/space/`). It refuses to upload an index that doesn't
+match the current corpus. `--set-secret` copies `ANTHROPIC_API_KEY` from your
+shell into the Space's secrets; **put a spending limit on that key**, because
+visitors' questions use it. `RAG_MAX_QUESTIONS` (default 20) caps each chat
+session.
+
 ---
 
 ## Evaluation
@@ -214,18 +243,18 @@ python -m docqa.report docs/eval_results.json            # redraw the charts (`r
 
 A retrieved chunk is a **page hit** if it comes from the right page and a
 **section hit** if it also sits in the right section; **MRR** is the mean of
-1/rank of the first section hit. Results (1,003 chunks; latency on a 4-core
+1/rank of the first section hit. Results (987 chunks; latency on a 4-core
 laptop CPU, i7-8550U):
 
 | method | page@1 | section@1 | section@3 | section@5 | MRR | paraphrase section@5 | ms/query |
 |---|---|---|---|---|---|---|---|
-| TF-IDF (where this started) | 0.76 | 0.64 | 0.74 | 0.78 | 0.70 | 0.57 | 8 |
-| BM25 | 0.83 | 0.68 | 0.81 | 0.84 | 0.74 | 0.69 | 1 |
-| dense (bge-small) | 0.84 | 0.65 | 0.74 | 0.77 | 0.70 | 0.55 | 44 |
-| hybrid (BM25 + dense, RRF) | 0.89 | 0.69 | 0.78 | 0.83 | 0.74 | 0.67 | 44 |
-| BM25 + rerank | 0.91 | 0.79 | 0.86 | 0.88 | 0.82 | 0.76 | 2,857 |
-| dense + rerank | 0.89 | 0.77 | 0.87 | 0.89 | 0.82 | 0.78 | 2,885 |
-| **hybrid + rerank (default)** | **0.91** | **0.80** | **0.88** | **0.92** | **0.84** | **0.84** | 3,266 |
+| TF-IDF (where this started) | 0.74 | 0.63 | 0.76 | 0.80 | 0.70 | 0.61 | 6 |
+| BM25 | 0.83 | 0.71 | 0.81 | 0.84 | 0.76 | 0.69 | <1 |
+| dense (bge-small) | 0.84 | 0.64 | 0.72 | 0.77 | 0.69 | 0.55 | 42 |
+| hybrid (BM25 + dense, RRF) | 0.88 | 0.68 | 0.79 | 0.86 | 0.74 | 0.73 | 46 |
+| BM25 + rerank | 0.92 | 0.80 | 0.87 | 0.89 | 0.83 | 0.78 | 2,946 |
+| dense + rerank | 0.88 | 0.78 | 0.87 | 0.89 | 0.82 | 0.78 | 3,018 |
+| **hybrid + rerank (default)** | **0.91** | **0.80** | **0.91** | **0.93** | **0.85** | **0.86** | 3,002 |
 
 ![Retrieval quality per method](docs/images/retrieval_quality.png)
 
@@ -233,16 +262,19 @@ laptop CPU, i7-8550U):
 
 What the numbers say:
 
-- **BM25 beats TF-IDF** on every metric (MRR 0.70 → 0.74, paraphrases 0.57 →
-  0.69), at no cost, so it is the default when the extra isn't installed.
-- **Fusion on its own barely moves the top ranks** (MRR 0.74, like BM25), but it
-  finds the right page far more often (0.89) and puts the right section in the
-  top 20 for 96% of questions, against 90–92% for either search alone. That's
-  what the reranker needs: with fused candidates it reaches 0.84 on
-  paraphrases, against 0.76 when BM25 alone supplies them.
-- **The reranker is the big step**: section@1 0.69 → 0.80, MRR 0.74 → 0.84. It
+- **BM25 beats TF-IDF** (MRR 0.70 → 0.76, paraphrases 0.61 → 0.69) at no
+  cost, so it is the default when the extra isn't installed.
+- **Fusion on its own doesn't improve the top rank** (MRR 0.74, slightly below
+  BM25), but it finds the right page more often (0.88) and puts the right
+  section in the top 20 for 97% of questions, against 91–92% for either search
+  alone. That's what the reranker needs: with fused candidates it reaches 0.86
+  on paraphrases, against 0.78 when BM25 alone supplies them.
+- **The reranker is the big step**: section@1 0.68 → 0.80, MRR 0.74 → 0.85. It
   is also the cost: ~3 s per question on a laptop CPU, almost all of it in the
   cross-encoder.
+- **Dense retrieval alone is not an upgrade here**: bge-small scores about like
+  TF-IDF overall (MRR 0.69) and worse on paraphrases. It earns its place only
+  combined with BM25.
 
 It doesn't fix everything. For *"How do I keep class proportions equal across
 CV folds?"* the top hit is still the *Group K-fold* section (it mentions class
@@ -274,7 +306,9 @@ Each verdict comes with the judge's reason and the unsupported claims, so any
 grade can be checked by hand. The judge is the same model family as the
 answerer, which can flatter it; spot-checking the reasons is part of the job.
 
-**Chunking was chosen on this set too** (MRR, TF-IDF / bge-small):
+**Chunking was chosen on this set too** (MRR, TF-IDF / bge-small; measured
+before links to the example gallery were stripped from the corpus, hence the
+slightly different chunk count):
 
 | chunking | chunks | MRR |
 |---|---|---|
@@ -293,6 +327,8 @@ rag-document-qa/
 │   ├── sklearn_eval.jsonl       # 100 labeled questions (page + section)
 │   └── ml_notes/*.md            # tiny corpus for fast tests
 ├── scripts/fetch_sklearn_docs.py  # rebuilds data/sklearn from a pinned release
+├── scripts/deploy_space.py      # publishes the demo to a Hugging Face Space
+├── deploy/space/                # the Space's card and pinned requirements
 ├── src/docqa/
 │   ├── config.py                # paths, backend, model, chunk params
 │   ├── chunk.py                 # heading-aware chunking

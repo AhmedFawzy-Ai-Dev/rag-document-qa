@@ -41,7 +41,7 @@ unseen data.
 
 **Examples**
 
-* sphx glr auto examples cluster plot inductive clustering.py: An example
+* An example
   of an inductive clustering model for handling new data.
 
 ## K-means
@@ -81,8 +81,8 @@ It suffers from various drawbacks:
   computations.
 
 For more detailed descriptions of the issues shown above and how to address them,
-refer to the examples sphx glr auto examples cluster plot kmeans assumptions.py
-and sphx glr auto examples cluster plot kmeans silhouette analysis.py.
+refer to the examples 
+and .
 
 K-means is often referred to as Lloyd's algorithm. In basic terms, the
 algorithm has three steps. The first step chooses the initial centroids, with
@@ -116,8 +116,8 @@ k-means++ initialization scheme, which has been implemented in scikit-learn
 (generally) distant from each other, leading to probably better results than
 random initialization, as shown in the reference. For detailed examples of
 comparing different initialization schemes, refer to
-sphx glr auto examples cluster plot kmeans digits.py and
-sphx glr auto examples cluster plot kmeans stability low dim dense.py.
+ and
+.
 
 K-means++ can also be called independently to select seeds for other
 clustering algorithms, see `sklearn.cluster.kmeans_plusplus` for details
@@ -131,10 +131,10 @@ to the dataset $X$.
 
 **Examples**
 
-* sphx glr auto examples text plot document clustering.py: Document clustering
+* Document clustering
   using `KMeans` and `MiniBatchKMeans` based on sparse data
 
-* sphx glr auto examples cluster plot kmeans plusplus.py: Using K-means++
+* Using K-means++
   to select seeds for other clustering algorithms.
 
 ### Low-level parallelism
@@ -146,9 +146,9 @@ threads, please refer to our parallelism notes.
 
 **Examples**
 
-* sphx glr auto examples cluster plot kmeans assumptions.py: Demonstrating when
+* Demonstrating when
   k-means performs intuitively and when it does not
-* sphx glr auto examples cluster plot kmeans digits.py: Clustering handwritten digits
+* Clustering handwritten digits
 
 **References**
 * "k-means++: The advantages of careful seeding"
@@ -183,13 +183,11 @@ small, as shown in the example and cited reference.
 
 **Examples**
 
-* sphx glr auto examples cluster plot mini batch kmeans.py: Comparison of
+* Comparison of
   `KMeans` and `MiniBatchKMeans`
 
-* sphx glr auto examples text plot document clustering.py: Document clustering
+* Document clustering
   using `KMeans` and `MiniBatchKMeans` based on sparse data
-
-* sphx glr auto examples cluster plot dict face patches.py
 
 **References**
 * "Web Scale K-Means clustering"
@@ -265,9 +263,9 @@ where $t$ indicates the iteration times.
 
 **Examples**
 
-* sphx glr auto examples cluster plot affinity propagation.py: Affinity
+* Affinity
   Propagation on a synthetic 2D datasets with 3 classes
-* sphx glr auto examples applications plot stock market.py Affinity Propagation
+*  Affinity Propagation
   on financial time series to find groups of companies
 
 ## Mean Shift
@@ -326,7 +324,7 @@ given sample.
 
 **Examples**
 
-* sphx glr auto examples cluster plot mean shift.py: Mean Shift clustering
+* Mean Shift clustering
   on a synthetic 2D datasets with 3 classes.
 
 **References**
@@ -372,9 +370,9 @@ See the examples for such an application.
 
 **Examples**
 
-* sphx glr auto examples cluster plot segmentation toy.py: Segmenting objects
+* Segmenting objects
   from a noisy background using spectral clustering.
-* sphx glr auto examples cluster plot coin segmentation.py: Spectral clustering
+* Spectral clustering
   to split the image of coins in regions.
 
 ### Different label assignment strategies
@@ -483,10 +481,10 @@ Single linkage can also perform well on non-globular data.
 
 **Examples**
 
-* sphx glr auto examples cluster plot digits linkage.py: exploration of the
+* exploration of the
   different linkage strategies in a real dataset.
 
-  * sphx glr auto examples cluster plot linkage comparison.py: exploration of
+  * exploration of
     the different linkage strategies in toy datasets.
 
 ### Visualization of cluster hierarchy
@@ -494,10 +492,6 @@ Single linkage can also perform well on non-globular data.
 It's possible to visualize the tree representing the hierarchical merging of clusters
 as a dendrogram. Visual inspection can often be useful for understanding the structure
 of the data, though more so in the case of small sample sizes.
-
-**Examples**
-
-* sphx glr auto examples cluster plot agglomerative dendrogram.py
 
 ### Adding connectivity constraints
 
@@ -535,19 +529,19 @@ particularly so if they are built with
 `sklearn.neighbors.kneighbors_graph`. In the limit of a small
 number of clusters, they tend to give a few macroscopically occupied
 clusters and almost empty ones. (see the discussion in
-sphx glr auto examples cluster plot ward structured vs unstructured.py).
+).
 Single linkage is the most brittle linkage option with regard to this issue.
 
 **Examples**
 
-* sphx glr auto examples cluster plot coin ward segmentation.py: Ward
+* Ward
   clustering to split the image of coins in regions.
 
-* sphx glr auto examples cluster plot ward structured vs unstructured.py: Example
+* Example
   of Ward algorithm on a Swiss-roll, comparison of structured approaches
   versus unstructured approaches.
 
-* sphx glr auto examples cluster plot feature agglomeration vs univariate selection.py: Example
+* Example
   of dimensionality reduction with feature agglomeration based on Ward
   hierarchical clustering.
 
@@ -568,10 +562,6 @@ matrix.
 The guidelines for choosing a metric is to use one that maximizes the
 distance between samples in different classes, and minimizes that within
 each class.
-
-**Examples**
-
-* sphx glr auto examples cluster plot agglomerative clustering metrics.py
 
 ### Bisecting K-Means
 
@@ -607,7 +597,7 @@ Picking by largest amount of data points will also likely produce clusters of si
 sizes while `KMeans` is known to produce clusters of different sizes.
 
 Difference between Bisecting K-Means and regular K-Means can be seen on example
-sphx glr auto examples cluster plot bisect kmeans.py.
+.
 While the regular K-Means algorithm tends to create non-related clusters,
 clusters from Bisecting K-Means are well ordered and create quite a visible hierarchy.
 
@@ -674,10 +664,6 @@ by black points below.
 
 **dbscan_results**
 
-**Examples**
-
-* sphx glr auto examples cluster plot dbscan.py
-
 **Implementation**
 The DBSCAN algorithm is deterministic, always generating the same clusters when
 given the same data in the same order.  However, the results can differ when
@@ -740,10 +726,6 @@ scales by building an alternative representation of the clustering problem.
 **Note:**
 This implementation is adapted from the original implementation of HDBSCAN,
 scikit-learn-contrib/hdbscan based on [LJ2017].
-
-**Examples**
-
-* sphx glr auto examples cluster plot hdbscan.py
 
 ### Mutual Reachability Graph
 
@@ -856,10 +838,6 @@ plot above has been color-coded so that cluster colors in planar space match
 the linear segment clusters of the reachability plot. Note that the blue and
 red clusters are adjacent in the reachability plot, and can be hierarchically
 represented as children of a larger parent cluster.
-
-**Examples**
-
-* sphx glr auto examples cluster plot optics.py
 
 **Comparison with DBSCAN**
 The results from OPTICS `cluster_optics_dbscan` method and DBSCAN are very
@@ -1092,7 +1070,7 @@ will not necessarily be close to zero:
 
 **Examples**
 
-* sphx glr auto examples cluster plot adjusted for chance measures.py:
+* 
   Analysis of the impact of the dataset size on the value of
   clustering measures for random assignments.
 
@@ -1225,7 +1203,7 @@ Bad (e.g. independent labelings) have non-positive scores:
 
 **Examples**
 
-* sphx glr auto examples cluster plot adjusted for chance measures.py: Analysis
+* Analysis
   of the impact of the dataset size on the value of clustering measures for random
   assignments. This example also includes the Adjusted Rand Index.
 
@@ -1438,7 +1416,7 @@ homogeneity_score(a, b) == completeness_score(b, a)
 
 **Examples**
 
-* sphx glr auto examples cluster plot adjusted for chance measures.py: Analysis
+* Analysis
   of the impact of the dataset size on the value of clustering measures for
   random assignments.
 
@@ -1633,7 +1611,7 @@ cluster analysis.
 
 **Examples**
 
-* sphx glr auto examples cluster plot kmeans silhouette analysis.py : In
+*  In
   this example the silhouette analysis is used to choose an optimal value for
   n_clusters.
 

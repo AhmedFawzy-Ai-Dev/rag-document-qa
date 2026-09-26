@@ -42,8 +42,8 @@ TOP_K = int(os.environ.get("RAG_TOP_K", "4"))
 
 # Reranking: a cross-encoder rescores the top RERANK_CANDIDATES chunks. "auto"
 # turns it on when the `transformer` extra is installed. On the eval set,
-# MiniLM-L6 (22M params) lifted hybrid MRR from 0.74 to 0.84. With 20 candidates
-# (the right section is among them for 96% of questions) it is 30% faster than
+# MiniLM-L6 (22M params) lifted hybrid MRR from 0.74 to 0.85. With 20 candidates
+# (the right section is among them for 97% of questions) it is 30% faster than
 # with 30 for an MRR 0.003 lower.
 RERANK = os.environ.get("RAG_RERANK", "auto").lower()
 RERANK_MODEL = os.environ.get("RAG_RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L6-v2")

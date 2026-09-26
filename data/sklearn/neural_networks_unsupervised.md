@@ -24,10 +24,6 @@ density estimation.
 The method gained popularity for initializing deep neural networks with the
 weights of independent RBMs. This method is known as unsupervised pre-training.
 
-**Examples**
-
-* sphx glr auto examples neural networks plot rbm logistic classification.py
-
 ### Graphical model and parametrization
 
 The graphical model of an RBM is a fully-connected bipartite graph.

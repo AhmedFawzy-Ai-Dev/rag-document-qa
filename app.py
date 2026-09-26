@@ -10,6 +10,15 @@ ANTHROPIC_API_KEY is set, otherwise the extractive fallback.
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+# Use the package next to this file (a checkout, or a Hugging Face Space where it
+# sits in src/), even if some other copy of docqa is installed.
+_SRC = Path(__file__).resolve().parent / "src"
+if (_SRC / "docqa").is_dir():
+    sys.path.insert(0, str(_SRC))
+
 from docqa import config
 from docqa.chat import index_files, respond
 from docqa.store import VectorStore, build_index
@@ -25,9 +34,15 @@ EXAMPLES = [
 
 def _load_store() -> VectorStore:
     try:
-        return VectorStore.load()
+        store = VectorStore.load()
     except FileNotFoundError:
         return build_index(save=True)
+    except Exception as exc:  # noqa: BLE001 - e.g. an index pickled by other library versions
+        print(f"Rebuilding the index ({type(exc).__name__}: {exc})")
+        return build_index(save=True)
+    # Load the models now, so the first visitor doesn't wait for downloads.
+    store.search("warm up", 1)
+    return store
 
 
 def main() -> None:

@@ -42,10 +42,6 @@ prediction time depends on the parameters $\epsilon$ and $C$ of
 the `SVR`; $\epsilon = 0$ would correspond to a
 dense model.
 
-**Examples**
-
-* sphx glr auto examples miscellaneous plot kernel ridge regression.py
-
 **References**
 
 [M2012] "Machine Learning: A Probabilistic Perspective" Murphy, K. P. - chapter 14.4.3, pp. 492-493, The MIT Press, 2012

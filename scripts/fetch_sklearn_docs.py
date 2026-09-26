@@ -53,6 +53,8 @@ def convert_inline(text: str) -> str:
             body = link.group(2)
         if name.endswith("math"):
             return f"${body}$"
+        if name == "ref" and body.startswith("sphx_glr"):
+            return ""     # links to the example gallery, which isn't in the corpus
         if name in API_ROLES:
             body = body.lstrip("!")
             if body.startswith("~"):
@@ -175,6 +177,10 @@ def convert(rst: str) -> str:
     # leaving code blocks and display math untouched.
     parts = re.split(r"(```.*?```|\$\$.*?\$\$)", "\n".join(out), flags=re.DOTALL)
     md = "".join(p if k % 2 else convert_inline(p) for k, p in enumerate(parts))
+    # Gallery links leave empty bullets, and "Examples" rubrics with nothing under them.
+    md = re.sub(r"(?m)^[ \t]*[*-][ \t]*$\n?", "", md)
+    md = re.sub(r"(?m)^([ \t]*[*-][ \t]+):[ \t]*", r"\1", md)   # "* : description"
+    md = re.sub(r"\*\*Examples\*\*\s*(?=#|\*\*|\Z)", "", md)
     return re.sub(r"\n{3,}", "\n\n", md).strip() + "\n"
 
 

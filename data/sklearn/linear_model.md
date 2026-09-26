@@ -53,10 +53,6 @@ to random errors in the observed target, producing a large
 variance. This situation of *multicollinearity* can arise, for
 example, when data are collected without an experimental design.
 
-**Examples**
-
-* sphx glr auto examples linear model plot ols ridge.py
-
 ### Non-Negative Least Squares
 
 It is possible to constrain all the coefficients to be non-negative, which may
@@ -64,10 +60,6 @@ be useful when they represent some physical or naturally non-negative
 quantities (e.g., frequency counts or prices of goods).
 `LinearRegression` accepts a boolean `positive`
 parameter: when set to `True` Non-Negative Least Squares are then applied.
-
-**Examples**
-
-* sphx glr auto examples linear model plot nnls.py
 
 ### Ordinary Least Squares Complexity
 
@@ -126,13 +118,6 @@ the corresponding solver is chosen.
 | 'sparse_cg' | None of the above conditions are fulfilled.        |
 +-------------+----------------------------------------------------+
 
-**Examples**
-
-* sphx glr auto examples linear model plot ols ridge.py
-* sphx glr auto examples linear model plot ridge path.py
-* sphx glr auto examples inspection plot linear model coefficient interpretation.py
-* sphx glr auto examples linear model plot ridge coeffs.py
-
 ### Classification
 
 The `Ridge` regressor has a classifier variant:
@@ -158,10 +143,6 @@ compute the projection matrix $(X^T X)^{-1} X^T$ only once.
 This classifier is sometimes referred to as a Least Squares Support Vector
 Machine with
 a linear kernel.
-
-**Examples**
-
-* sphx glr auto examples text plot document classification 20newsgroups.py
 
 ### Ridge Complexity
 
@@ -207,7 +188,7 @@ with fewer non-zero coefficients, effectively reducing the number of
 features upon which the given solution is dependent. For this reason,
 Lasso and its variants are fundamental to the field of compressed sensing.
 Under certain conditions, it can recover the exact set of non-zero coefficients (see
-sphx glr auto examples applications plot tomography l1 reconstruction.py).
+).
 
 Mathematically, it consists of a linear model with an added regularization term.
 The objective function to minimize is:
@@ -235,13 +216,6 @@ array([0.8])
 
 The function `lasso_path` is useful for lower-level tasks, as it
 computes the coefficients along the full path of possible values.
-
-**Examples**
-
-* sphx glr auto examples linear model plot lasso and elasticnet.py
-* sphx glr auto examples applications plot tomography l1 reconstruction.py
-* sphx glr auto examples inspection plot linear model coefficient interpretation.py
-* sphx glr auto examples linear model plot lasso model selection.py
 
 **Note:**
 As the Lasso regression yields sparse models, it can
@@ -369,11 +343,6 @@ the solution, are derived for large samples (asymptotic results) and assume the
 correct model is candidates under investigation. They also tend to break when
 the problem is badly conditioned (e.g. more features than samples).
 
-**Examples**
-
-* sphx glr auto examples linear model plot lasso model selection.py
-* sphx glr auto examples linear model plot lasso lars ic.py
-
 #### AIC and BIC criteria
 
 The definition of AIC (and thus BIC) might differ in the literature. In this
@@ -462,10 +431,6 @@ the MultiTaskLasso are full columns.
 
 **Fitting a time-series model, imposing that any active feature be active at all times.**
 
-**Examples**
-
-* sphx glr auto examples linear model plot multi task lasso support.py
-
 **Mathematical details**
 Mathematically, it consists of a linear model trained with a mixed
 $\ell_1$ $\ell_2$-norm for regularization.
@@ -516,12 +481,6 @@ $$
 
 The class `ElasticNetCV` can be used to set the parameters
 `alpha` ($\alpha$) and `l1_ratio` ($\rho$) by cross-validation.
-
-**Examples**
-
-* sphx glr auto examples linear model plot lasso and elasticnet.py
-* sphx glr auto examples linear model plot lasso lasso lars elasticnet path.py
-* sphx glr auto examples linear model plot elastic net precomputed gram matrix with weighted samples.py
 
 **References**
 The following two references explain the iterations
@@ -615,8 +574,6 @@ array([0.6, 0.        ])
 
 **Examples**
 
-* sphx glr auto examples linear model plot lasso lasso lars elasticnet path.py
-
 The LARS algorithm provides the full path of the coefficients along
 the regularization parameter almost for free, thus a common operation
 is to retrieve the path with one of the functions `lars_path`
@@ -665,10 +622,6 @@ highly correlated with the current residual. It is similar to the simpler
 matching pursuit (MP) method, but better in that at each iteration, the
 residual is recomputed using an orthogonal projection on the space of the
 previously chosen dictionary elements.
-
-**Examples**
-
-* sphx glr auto examples linear model plot omp.py
 
 **References**
 * https://www.cs.technion.ac.il/~ronrubin/Publications/KSVD-OMP-v2.pdf
@@ -779,10 +732,6 @@ Due to the Bayesian framework, the weights found are slightly different from the
 ones found by ordinary least squares. However, Bayesian Ridge Regression
 is more robust to ill-posed problems.
 
-**Examples**
-
-* sphx glr auto examples linear model plot bayesian ridge curvefit.py
-
 **References**
 * Section 3.3 in Christopher M. Bishop: Pattern Recognition and Machine Learning, 2006
 
@@ -818,9 +767,9 @@ given by the hyperparameters $\lambda_1$ and $\lambda_2$.
 ARD is also known in the literature as *Sparse Bayesian Learning* and *Relevance
 Vector Machine* [3] [4].
 
-See sphx glr auto examples linear model plot ard.py for a worked-out comparison between ARD and Bayesian Ridge Regression.
+See  for a worked-out comparison between ARD and Bayesian Ridge Regression.
 
-See sphx glr auto examples linear model plot lasso and elasticnet.py for a comparison between various methods - Lasso, ARD and ElasticNet - on correlated data.
+See  for a comparison between various methods - Lasso, ARD and ElasticNet - on correlated data.
 
 **References**
 
@@ -857,15 +806,6 @@ regression, which is the predicted probability, can be used as a classifier
 by applying a threshold (by default 0.5) to it. This is how it is
 implemented in scikit-learn, so it expects a categorical target, making
 the Logistic Regression a classifier.
-
-**Examples**
-
-* sphx glr auto examples linear model plot logistic l1 l2 sparsity.py
-* sphx glr auto examples linear model plot logistic path.py
-* sphx glr auto examples linear model plot logistic multinomial.py
-* sphx glr auto examples linear model plot sparse logistic regression 20newsgroups.py
-* sphx glr auto examples linear model plot sparse logistic regression mnist.py
-* sphx glr auto examples classification plot classification probability.py
 
 ### Binary Case
 
@@ -1246,11 +1186,6 @@ array([0.2463, 0.4337])
 np.float64(-0.7638)
 ```
 
-**Examples**
-
-* sphx glr auto examples linear model plot poisson regression non normal loss.py
-* sphx glr auto examples linear model plot tweedie regression insurance claims.py
-
 **Practical considerations**
 The feature matrix `X` should be standardized before fitting. This ensures
 that the penalty treats features equally.
@@ -1266,7 +1201,7 @@ volume, ...) you can do so by using a Poisson distribution and passing
 $y=\frac{\mathrm{counts}}{\mathrm{exposure}}$ as target values
 together with $\mathrm{exposure}$ as sample weights. For a concrete
 example see e.g.
-sphx glr auto examples linear model plot tweedie regression insurance claims.py.
+.
 
 When performing cross-validation for the `power` parameter of
 `TweedieRegressor`, it is advisable to specify an explicit `scoring` function,
@@ -1406,11 +1341,6 @@ which may be subject to noise, and outliers, which are e.g. caused by erroneous
 measurements or invalid hypotheses about the data. The resulting model is then
 estimated only from the determined inliers.
 
-**Examples**
-
-* sphx glr auto examples linear model plot ransac.py
-* sphx glr auto examples linear model plot robust fit.py
-
 **Details of the algorithm**
 Each iteration performs the following steps:
 
@@ -1453,11 +1383,6 @@ that the robustness of the estimator decreases quickly with the dimensionality
 of the problem. It loses its robustness properties and becomes no
 better than an ordinary least squares in high dimension.
 
-**Examples**
-
-* sphx glr auto examples linear model plot theilsen.py
-* sphx glr auto examples linear model plot robust fit.py
-
 **Theoretical considerations**
 `TheilSenRegressor` is comparable to the Ordinary Least Squares
 (OLS) in terms of asymptotic efficiency and as an
@@ -1499,10 +1424,6 @@ A sample is classified as an inlier if the absolute error of that sample is
 less than the threshold `epsilon`. It differs from `TheilSenRegressor`
 and `RANSACRegressor` because it does not ignore the effect of the outliers
 but gives a lesser weight to them.
-
-**Examples**
-
-* sphx glr auto examples linear model plot huber vs ridge.py
 
 **Mathematical details**
 `HuberRegressor` minimizes
@@ -1563,15 +1484,11 @@ estimated by models other than linear models. For example,
 `GradientBoostingRegressor` can predict conditional
 quantiles if its parameter `loss` is set to `"quantile"` and parameter
 `alpha` is set to the quantile that should be predicted. See the example in
-sphx glr auto examples ensemble plot gradient boosting quantile.py.
+.
 
 Most implementations of quantile regression are based on linear programming
 problem. The current implementation is based on
 `scipy.optimize.linprog`.
-
-**Examples**
-
-* sphx glr auto examples linear model plot quantile regression.py
 
 **Mathematical details**
 As a linear model, the `QuantileRegressor` gives linear predictions

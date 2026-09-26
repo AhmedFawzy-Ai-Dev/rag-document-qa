@@ -95,12 +95,6 @@ array([0, 1]...)
 array([1, 1]...)
 ```
 
-**Examples**
-
-* sphx glr auto examples svm plot separating hyperplane.py
-* sphx glr auto examples svm plot svm anova.py
-* sphx glr auto examples classification plot classification probability.py
-
 ### Multi-class classification
 
 `SVC` and `NuSVC` implement the "one-versus-one" ("ovo")
@@ -189,10 +183,6 @@ Then `dual_coef_` looks like this:
 |for SVs of class 0                                                        |for SVs of class 1                               |for SVs of class 2                               |
 +--------------------------------------------------------------------------+-------------------------------------------------+-------------------------------------------------+
 
-**Examples**
-
-* sphx glr auto examples svm plot iris svc.py
-
 ### Scores and probabilities
 
 The `decision_function` method of `SVC` and `NuSVC` gives
@@ -233,7 +223,7 @@ by default. You can set `break_ties=True` for the output of `predict` to be
 the same as `np.argmax(clf.decision_function(...), axis=1)`, otherwise the
 first class among the tied classes will always be returned; but have in mind
 that it comes with a computational cost. See
-sphx glr auto examples svm plot svm tie breaking.py for an example on
+ for an example on
 tie breaking.
 
 ### Unbalanced problems
@@ -257,11 +247,6 @@ example to `C * sample_weight[i]`, which will encourage the classifier to
 get these samples right. The figure below illustrates the effect of sample
 weighting on the decision boundary. The size of the circles is proportional
 to the sample weights:
-
-**Examples**
-
-* sphx glr auto examples svm plot separating hyperplane unbalanced.py
-* sphx glr auto examples svm plot weighted samples.py
 
 ## Regression
 
@@ -302,10 +287,6 @@ SVR()
 >>> regr.predict([[1, 1]])
 array([1.5])
 ```
-
-**Examples**
-
-* sphx glr auto examples svm plot svm regression.py
 
 ## Density estimation, novelty detection
 
@@ -463,11 +444,6 @@ Proper choice of `C` and `gamma` is critical to the SVM's performance.  One
 is advised to use `GridSearchCV` with
 `C` and `gamma` spaced exponentially far apart to choose good values.
 
-**Examples**
-
-* sphx glr auto examples svm plot rbf parameters.py
-* sphx glr auto examples svm plot svm scale c.py
-
 ### Custom Kernels
 
 You can define your own kernels by either giving the kernel as a
@@ -524,10 +500,6 @@ test vectors must be provided:
     >>> gram_test = np.dot(X_test, X_train.T)
     >>> clf.predict(gram_test)
     array([0, 1, 0])
-
-**Examples**
-
-* sphx glr auto examples svm plot custom kernel.py
 
 ## Mathematical formulation
 
