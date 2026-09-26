@@ -28,3 +28,31 @@ jobs:
         run: |
           python -m docqa.ingest
           python -m docqa.ask "How does RAG reduce hallucination?" --show-sources
+
+  # The dense backend needs torch and a model download, so it gets its own job
+  # (one Python version) instead of slowing down the matrix above.
+  test-transformer:
+    runs-on: ubuntu-latest
+    env:
+      RAG_REQUIRE_TRANSFORMER: "1"  # fail, don't skip, if the extra is broken
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-${{ hashFiles('src/docqa/config.py') }}
+      - name: Install (CPU-only torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[dev,transformer]"
+      - name: Test
+        run: pytest -q
+      - name: Ingest + ask (transformer backend)
+        run: |
+          python -m docqa.ingest --backend transformer
+          python -m docqa.ask "my fraud model is 99% right but catches nothing" --show-sources

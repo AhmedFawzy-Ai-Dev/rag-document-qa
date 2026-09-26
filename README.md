@@ -76,8 +76,9 @@ question ─────────────► embed ─► cosine search �
 2. **Embed** (`embed.py`) — two interchangeable backends:
    - **`tfidf`** (default) — scikit-learn TF-IDF. No downloads, fully local, and
      a genuinely strong retrieval baseline.
-   - **`transformer`** (optional) — mean-pooled BERT embeddings for semantic
-     retrieval beyond exact word matches.
+   - **`transformer`** (optional) — dense [sentence-transformers](https://sbert.net)
+     embeddings (default `BAAI/bge-small-en-v1.5`) for semantic retrieval beyond
+     exact word matches.
 3. **Retrieve** (`store.py`) — cosine similarity over the chunk vectors.
 4. **Generate** (`generate.py`) — the retrieved passages are put in the prompt
    and **Claude** answers using only them, citing sources. No key? It falls back
@@ -121,8 +122,10 @@ and prints the reason as a `Note:`.
 Passages scoring below a relevance threshold are dropped, so an off-topic
 question gets "I couldn't find anything relevant" instead of an answer built
 from unrelated text (and no Claude call is made). The TF-IDF default is `0.1`;
-the transformer backend doesn't filter by default since its scores use a
-different scale. Tune it with `RAG_MIN_SCORE`.
+the transformer backend doesn't filter by default, because dense scores don't
+separate on- from off-topic questions on these docs (bge-small: on-topic ≥ 0.52,
+off-topic up to 0.54). There, Claude's instruction to say when the passages
+don't answer the question does that job. Tune it with `RAG_MIN_SCORE`.
 
 **All settings** (environment variables, see `src/docqa/config.py`):
 
@@ -133,8 +136,7 @@ different scale. Tune it with `RAG_MIN_SCORE`.
 | `RAG_BACKEND` | `tfidf` | `tfidf` or `transformer` |
 | `RAG_TOP_K` | `4` | passages retrieved per question |
 | `RAG_MIN_SCORE` | `0.1` (TF-IDF) | relevance threshold |
-| `RAG_EMBED_MODEL` | `google/bert_uncased_L-4_H-256_A-4` | transformer embedding model |
-| `RAG_EMBED_TOKENIZER` | the model's own | tokenizer override for the transformer backend |
+| `RAG_EMBED_MODEL` | `BAAI/bge-small-en-v1.5` | any sentence-transformers model, for the transformer backend |
 | `RAG_DATA_DIR` | `<repo>/data` | folder holding `docs/` and `index.joblib`; set it when installed with a regular `pip install .` |
 
 ---
@@ -161,6 +163,10 @@ rag-document-qa/
 - **TF-IDF is the default on purpose.** Sparse retrieval is dependency-free,
   instant, and hard to beat on small corpora; dense embeddings are one flag away
   when semantics matter. Real systems often use both (hybrid).
+- **Why bge-small.** On the 24 labeled questions in `tests/test_rag.py` (12
+  keyword, 12 paraphrased), recall@1 was: TF-IDF 12 + 9, `all-MiniLM-L6-v2`
+  12 + 11, `bge-small-en-v1.5` 12 + 12. The mean-pooled BERT-mini that this
+  backend used before scored 9 + 8, below TF-IDF.
 - **In-memory store.** Fine for a small knowledge base; the `store.search`
   interface swaps cleanly to FAISS or a vector DB for scale.
 - **Extractive fallback is a feature, not a stub** — it keeps the app runnable

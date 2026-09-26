@@ -3,10 +3,13 @@
 Both expose the same tiny interface so the rest of the app doesn't care which
 one is in use:
 
-    embedder.fit(texts)          # learn any vocabulary/state from the corpus
-    matrix = embedder.encode(texts)   # -> a (n, d) matrix (sparse or dense)
+    embedder.fit(texts)                     # learn any vocabulary/state from the corpus
+    matrix = embedder.encode(texts)         # documents -> (n, d) matrix (sparse or dense)
+    qv = embedder.encode_queries([query])   # queries, embedded for search against them
 
-Cosine similarity in ``store.py`` works on either representation.
+Queries and documents are encoded separately because some embedding models
+expect a different prompt for each. Cosine similarity in ``store.py`` works on
+either representation.
 """
 from __future__ import annotations
 
@@ -44,34 +47,28 @@ class TfidfEmbedder:
             raise RuntimeError("Call fit() before encode() for the TF-IDF backend.")
         return self.vectorizer.transform(texts)  # sparse (n, vocab)
 
-
-# Models whose hub repo ships no tokenizer config borrow a compatible one.
-# bert-mini has only vocab.txt, which is bert-base-uncased's vocabulary.
-BORROWED_TOKENIZERS = {"google/bert_uncased_L-4_H-256_A-4": "bert-base-uncased"}
-
-
-def tokenizer_name(model_name: str) -> str:
-    """The tokenizer to load for an embedding model (RAG_EMBED_TOKENIZER wins)."""
-    return config.EMBED_TOKENIZER_NAME or BORROWED_TOKENIZERS.get(model_name, model_name)
+    def encode_queries(self, texts: list[str]):
+        return self.encode(texts)
 
 
 class TransformerEmbedder:
-    """Mean-pooled embeddings from a small BERT (needs the `transformer` extra)."""
+    """Dense sentence embeddings via sentence-transformers (needs the `transformer` extra).
+
+    Any sentence-transformers model works (RAG_EMBED_MODEL); its own pooling,
+    normalization and query/document prompts are applied.
+    """
 
     name = "transformer"
 
     def __init__(self, model_name: str | None = None):
         self.model_name = model_name or config.EMBED_MODEL_NAME
-        self._tok = None
         self._model = None
 
     def _ensure_loaded(self):
-        if self._model is not None:
-            return
-        from transformers import AutoModel, AutoTokenizer
+        if self._model is None:
+            from sentence_transformers import SentenceTransformer
 
-        self._tok = AutoTokenizer.from_pretrained(tokenizer_name(self.model_name))
-        self._model = AutoModel.from_pretrained(self.model_name).eval()
+            self._model = SentenceTransformer(self.model_name)
 
     # The index is pickled with joblib: persist only the model name and reload the
     # weights lazily, rather than embedding the whole model (and failing on the
@@ -86,23 +83,12 @@ class TransformerEmbedder:
         return self  # pretrained; nothing to fit
 
     def encode(self, texts: list[str]) -> np.ndarray:
-        import torch
-
         self._ensure_loaded()
-        vectors = []
-        with torch.no_grad():
-            for i in range(0, len(texts), 16):
-                batch = texts[i : i + 16]
-                enc = self._tok(
-                    batch, padding=True, truncation=True, max_length=256, return_tensors="pt"
-                )
-                out = self._model(**enc).last_hidden_state          # (b, t, h)
-                mask = enc["attention_mask"].unsqueeze(-1).float()  # (b, t, 1)
-                pooled = (out * mask).sum(1) / mask.sum(1).clamp(min=1e-9)
-                vectors.append(pooled.cpu().numpy())
-        arr = np.concatenate(vectors, axis=0)
-        norms = np.linalg.norm(arr, axis=1, keepdims=True)
-        return arr / np.clip(norms, 1e-9, None)
+        return self._model.encode_document(texts, normalize_embeddings=True)
+
+    def encode_queries(self, texts: list[str]) -> np.ndarray:
+        self._ensure_loaded()
+        return self._model.encode_query(texts, normalize_embeddings=True)
 
 
 def get_embedder(backend: str | None = None):

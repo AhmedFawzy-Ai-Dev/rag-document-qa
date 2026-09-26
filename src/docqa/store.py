@@ -38,7 +38,7 @@ class VectorStore:
 
     def search(self, query: str, k: int | None = None) -> list[Hit]:
         k = k or config.TOP_K
-        qv = self.embedder.encode([query])
+        qv = self.embedder.encode_queries([query])
         sims = cosine_similarity(qv, self.matrix).ravel()
         order = sims.argsort()[::-1][:k]
         return [Hit(chunk=self.chunks[i], score=float(sims[i])) for i in order]
