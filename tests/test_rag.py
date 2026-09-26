@@ -159,7 +159,8 @@ def test_non_api_errors_propagate(tfidf_store, fake_key, monkeypatch):
 def test_ask_cli_prints_note(monkeypatch, capsys):
     result = {"question": "q", "answer": "a", "sources": [], "mode": "extractive",
               "note": "Claude call failed (AuthenticationError)"}
-    monkeypatch.setattr(ask, "answer", lambda question, k=None: result)
+    monkeypatch.setattr(ask, "answer_stream",
+                        lambda question, k=None: iter([{"type": "done", "result": result}]))
     monkeypatch.setattr("sys.argv", ["ask", "q"])
     ask.main()
     assert "AuthenticationError" in capsys.readouterr().err
@@ -225,32 +226,124 @@ def test_retrieval_eval_recall_at_1(tfidf_store):
     assert not misses, "\n".join(misses)
 
 
-def _fake_claude(monkeypatch, text, stop_reason="end_turn"):
+def _cite(doc_index, quote):
+    """A citation as the API returns it for a plain-text document."""
+    return SimpleNamespace(type="char_location", document_index=doc_index, cited_text=quote,
+                           start_char_index=0, end_char_index=len(quote))
+
+
+def _fake_claude(monkeypatch, text, stop_reason="end_turn", citations=(), fail_after=None):
+    """A fake client for both messages.create and messages.stream.
+
+    The stream yields the documented event shapes (content_block_delta with
+    text_delta / citations_delta); ``fail_after`` raises an SDK error mid-stream.
+    """
     calls = []
+    message = SimpleNamespace(
+        content=[SimpleNamespace(type="text", text=text, citations=list(citations))],
+        stop_reason=stop_reason, usage=SimpleNamespace(input_tokens=100, output_tokens=20))
+
+    def delta(**kw):
+        return SimpleNamespace(type="content_block_delta", delta=SimpleNamespace(**kw))
+
+    class Stream:
+        def __init__(self, kwargs):
+            calls.append(kwargs)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def __iter__(self):
+            yield SimpleNamespace(type="content_block_start")
+            for i, word in enumerate(text.split(" ")):
+                if fail_after is not None and i == fail_after:
+                    raise anthropic.AnthropicError("connection dropped")
+                yield delta(type="text_delta", text=word + " ")
+            for c in citations:
+                yield delta(type="citations_delta", citation=c)
+
+        def get_final_message(self):
+            return message
 
     def create(**kwargs):
         calls.append(kwargs)
-        return SimpleNamespace(content=[SimpleNamespace(type="text", text=text)],
-                               stop_reason=stop_reason,
-                               usage=SimpleNamespace(input_tokens=100, output_tokens=20))
+        return message
 
-    client = SimpleNamespace(messages=SimpleNamespace(create=create))
+    client = SimpleNamespace(messages=SimpleNamespace(create=create, stream=lambda **kw: Stream(kw)))
     monkeypatch.setattr(anthropic, "Anthropic", lambda: client)
     return calls
 
 
 def test_claude_answer_path(tfidf_store, fake_key, monkeypatch):
-    calls = _fake_claude(monkeypatch, "Leakage is ... [1]")
+    calls = _fake_claude(monkeypatch, "Leakage is ...", citations=[_cite(0, "Data leakage happens.")])
     result = answer(LEAKAGE_Q, store=tfidf_store)
     assert result["mode"] == "claude"
-    assert result["answer"] == "Leakage is ... [1]"
+    assert result["answer"] == "Leakage is ... [1]"      # marker built from the citation
+    assert result["citations"] == [{"n": 1, "source": "data_leakage.md",
+                                    "section": result["sources"][0]["section"],
+                                    "quote": "Data leakage happens."}]
     assert "note" not in result
     (req,) = calls
     assert req["model"] == config.GEN_MODEL
     assert req["max_tokens"] == config.MAX_ANSWER_TOKENS
     assert req["system"] == generate.SYSTEM_PROMPT
-    prompt = req["messages"][0]["content"]
-    assert "[1] (source: data_leakage.md)" in prompt and LEAKAGE_Q in prompt
+    *docs, question = req["messages"][0]["content"]
+    assert question == {"type": "text", "text": LEAKAGE_Q}
+    assert len(docs) == len(result["sources"])
+    first = docs[0]
+    assert first["citations"] == {"enabled": True} and first["source"]["type"] == "text"
+    assert first["title"].startswith("data_leakage.md: ")
+    # the heading path is in the title, not repeated in the citable text
+    assert not first["source"]["data"].startswith(result["sources"][0]["section"])
+
+
+def test_citations_are_deduplicated_and_bounded(tfidf_store):
+    hits = tfidf_store.search(LEAKAGE_Q, 2)
+    message = SimpleNamespace(
+        content=[
+            SimpleNamespace(type="text", text="A.", citations=[_cite(0, "x"), _cite(0, "x")]),
+            SimpleNamespace(type="text", text=" B.", citations=[_cite(1, "y"), _cite(7, "bad")]),
+            SimpleNamespace(type="text", text=" C.", citations=None),
+        ],
+        stop_reason="end_turn", usage=SimpleNamespace(input_tokens=1, output_tokens=1))
+    result = generate.build_result(message, hits)
+    assert result["answer"] == "A. [1] B. [2] C."
+    assert [(c["n"], c["quote"]) for c in result["citations"]] == [(1, "x"), (2, "y")]
+
+
+def test_streaming_yields_text_then_the_result(tfidf_store, fake_key, monkeypatch):
+    from docqa.pipeline import answer_stream
+
+    _fake_claude(monkeypatch, "Leakage is bad", citations=[_cite(0, "q")])
+    events = list(answer_stream(LEAKAGE_Q, store=tfidf_store))
+    assert "".join(e["text"] for e in events if e["type"] == "text") == "Leakage is bad "
+    assert [e["n"] for e in events if e["type"] == "citation"] == [1]
+    done = events[-1]
+    assert done["type"] == "done" and done["result"]["answer"] == "Leakage is bad [1]"
+    assert done["result"]["question"] == LEAKAGE_Q
+
+
+def test_stream_error_ends_with_the_fallback(tfidf_store, fake_key, monkeypatch):
+    from docqa.pipeline import answer_stream
+
+    _fake_claude(monkeypatch, "Leakage is bad", fail_after=1)
+    events = list(answer_stream(LEAKAGE_Q, store=tfidf_store))
+    assert events[0] == {"type": "text", "text": "Leakage "}
+    result = events[-1]["result"]
+    assert result["mode"] == "extractive" and "connection dropped" in result["note"]
+
+
+def test_ask_cli_streams_and_prints_citations(tfidf_store, fake_key, monkeypatch, capsys):
+    _fake_claude(monkeypatch, "Leakage is bad", citations=[_cite(0, "Data leakage happens.")])
+    monkeypatch.setattr(VectorStore, "load", staticmethod(lambda path=None: tfidf_store))
+    monkeypatch.setattr("sys.argv", ["ask", LEAKAGE_Q])
+    ask.main()
+    out = capsys.readouterr().out
+    assert "A: Leakage is bad" in out and "[mode: claude]" in out
+    assert '[1] "Data leakage happens."' in out and "data_leakage.md >" in out
 
 
 def test_truncated_claude_answer_is_noted(tfidf_store, fake_key, monkeypatch):

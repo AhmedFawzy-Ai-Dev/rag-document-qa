@@ -1,18 +1,19 @@
 """Ask a question against the indexed documents.
 
-    python -m docqa.ask "What is data leakage?"
-    python -m docqa.ask --show-sources "How does RAG reduce hallucination?"
+    python -m docqa.ask "How does gradient boosting handle missing values?"
+    python -m docqa.ask --show-sources "When should I use RobustScaler?"
 
-Uses Claude when ANTHROPIC_API_KEY is set, otherwise an extractive fallback.
+With ANTHROPIC_API_KEY set, Claude's answer streams in as it is written and is
+followed by the sentences it cites; otherwise an extractive fallback is shown.
 """
 from __future__ import annotations
 
 import argparse
 import sys
 
-from .pipeline import answer
+from .pipeline import answer_stream
 
-EXAMPLE = "What is data leakage and how do you detect it?"
+EXAMPLE = "How does gradient boosting handle missing values?"
 
 
 def main() -> None:
@@ -23,13 +24,30 @@ def main() -> None:
     args = parser.parse_args()
 
     question = " ".join(args.question) or EXAMPLE
-    result = answer(question, k=args.k)
+    print(f"Q: {question}\n")
+    streamed = False
+    for event in answer_stream(question, k=args.k):
+        if event["type"] == "text":
+            if not streamed:
+                print("A: ", end="")
+                streamed = True
+            print(event["text"], end="", flush=True)
+        elif event["type"] == "done":
+            result = event["result"]
 
-    print(f"Q: {result['question']}\n")
-    print(f"A: {result['answer']}\n")
+    if not streamed:
+        print(f"A: {result['answer']}\n")
+    elif result["mode"] != "claude":   # the stream broke off; show the fallback instead
+        print(f"\n\n(Answer interrupted.)\n\nA: {result['answer']}\n")
+    else:
+        print("\n")
     print(f"[mode: {result['mode']}]")
     if "note" in result:
         print(f"Note: {result['note']}", file=sys.stderr)
+    if result.get("citations"):
+        print("\nCitations (the exact sentences the answer relies on):")
+        for c in result["citations"]:
+            print(f'  [{c["n"]}] "{c["quote"]}"\n      — {c["source"]} > {c["section"]}')
     if args.show_sources:
         print("\nSources (most relevant first):")
         for s in result["sources"]:
