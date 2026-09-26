@@ -19,7 +19,7 @@ def main() -> None:
     args = parser.parse_args()
 
     store = build_index(docs_dir=args.docs, backend=args.backend, save=True)
-    print(f"Indexed {len(store.chunks)} chunks from {config.DOCS_DIR} "
+    print(f"Indexed {len(store.chunks)} chunks from {args.docs or config.DOCS_DIR} "
           f"using the '{args.backend}' backend.")
     print(f"Saved index -> {config.INDEX_PATH}")
 

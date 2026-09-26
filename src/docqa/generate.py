@@ -81,7 +81,10 @@ def synthesize(question: str, hits: list[Hit], model: str | None = None) -> dict
     text = "".join(block.text for block in response.content if block.type == "text").strip()
     if not text:
         raise NoAnswerError(f"no answer text (stop_reason={response.stop_reason})")
-    return {"answer": text, "sources": _sources(hits), "mode": "claude"}
+    result = {"answer": text, "sources": _sources(hits), "mode": "claude"}
+    if response.stop_reason == "max_tokens":
+        result["note"] = "Answer cut off at the token limit; raise RAG_MAX_TOKENS."
+    return result
 
 
 def generate(question: str, hits: list[Hit], model: str | None = None) -> dict:
