@@ -7,7 +7,10 @@ from pathlib import Path
 PACKAGE_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = PACKAGE_ROOT.parents[1]
 
-DATA_DIR = REPO_ROOT / "data"
+# REPO_ROOT/data only exists when running from a checkout (or an editable
+# install); a regular `pip install .` puts the package in site-packages, so point
+# RAG_DATA_DIR at the folder holding docs/ and index.joblib.
+DATA_DIR = Path(os.environ.get("RAG_DATA_DIR", REPO_ROOT / "data"))
 DOCS_DIR = DATA_DIR / "docs"          # source documents (.md / .txt)
 INDEX_PATH = DATA_DIR / "index.joblib"  # built retrieval index
 
@@ -21,6 +24,9 @@ CHUNK_OVERLAP = 30       # words shared between consecutive chunks
 #   "transformer" -> mean-pooled embeddings from a small BERT (optional extra)
 EMBEDDING_BACKEND = os.environ.get("RAG_BACKEND", "tfidf")
 EMBED_MODEL_NAME = os.environ.get("RAG_EMBED_MODEL", "google/bert_uncased_L-4_H-256_A-4")
+# Tokenizer for the transformer backend; by default the embedding model's own
+# (see embed.py for the one model that borrows another's).
+EMBED_TOKENIZER_NAME = os.environ.get("RAG_EMBED_TOKENIZER")
 TOP_K = int(os.environ.get("RAG_TOP_K", "4"))
 
 # Retrieved passages scoring below this are dropped as irrelevant; if none remain,
@@ -43,4 +49,6 @@ def min_score(backend: str) -> float:
 # cheaper/faster answers). The app reads ANTHROPIC_API_KEY from the environment
 # and never stores it; with no key it answers in extractive mode.
 GEN_MODEL = os.environ.get("RAG_MODEL", "claude-opus-5")
-MAX_ANSWER_TOKENS = 1024
+# Claude Opus 5 thinks by default and thinking counts toward max_tokens, so a
+# tight cap can cut the answer off (or leave none); answers stay short anyway.
+MAX_ANSWER_TOKENS = int(os.environ.get("RAG_MAX_TOKENS", "16000"))

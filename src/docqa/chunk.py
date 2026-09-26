@@ -62,7 +62,10 @@ def load_and_chunk(docs_dir: Path | str | None = None) -> list[Chunk]:
     """Read every .md/.txt file in a directory and chunk them all."""
     docs_dir = Path(docs_dir) if docs_dir is not None else config.DOCS_DIR
     if not docs_dir.exists():
-        raise FileNotFoundError(f"No docs directory at {docs_dir}.")
+        raise FileNotFoundError(
+            f"No docs directory at {docs_dir}. Pass --docs, or set RAG_DATA_DIR to a "
+            f"folder containing docs/."
+        )
     chunks: list[Chunk] = []
     for path in sorted(docs_dir.glob("*")):
         if path.suffix.lower() not in {".md", ".txt"}:

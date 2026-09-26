@@ -27,20 +27,29 @@ passages (wording will vary — this is an illustrative example of the format):
 
 ```
 A: Data leakage is when information unavailable at prediction time leaks into
-   training, so a model looks great in evaluation but fails in production [1].
-   Detect it with the chance-baseline comparison, a label-permutation test, and
-   a near-duplicate audit across the split [1].   [mode: claude]
+training, so a model looks great in evaluation but fails in production [1].
+Detect it with a label-permutation test and a near-duplicate audit across the
+split [1].
+
+[mode: claude]
 ```
 
 With **no key**, the app answers in extractive mode (verbatim from the docs) —
 this is the exact, reproducible output you get offline:
 
 ```
-A: Data Leakage in Machine Learning. Data leakage happens when information that
-   would not be available at prediction time leaks into the training process,
-   producing models that look excellent in evaluation but fail in production.
-   (Extractive mode — set ANTHROPIC_API_KEY for a synthesized answer.)   [mode: extractive]
-Sources: [1] data_leakage.md (0.20)  [2] evaluation_metrics.md (0.08)
+Q: What is data leakage and how do you detect it?
+
+A: Data Leakage in Machine Learning. Data leakage happens when information that would not be available at prediction
+time leaks into the training process, producing models that look excellent in
+evaluation but fail in production.
+
+(Extractive mode — showing the most relevant passage [1] from data_leakage.md. Set ANTHROPIC_API_KEY for a synthesized answer.)
+
+[mode: extractive]
+
+Sources (most relevant first):
+  [1] data_leakage.md  (score 0.4002)
 ```
 
 The repo ships a tiny ML knowledge base in [`data/docs/`](data/docs) so it works
@@ -114,6 +123,19 @@ question gets "I couldn't find anything relevant" instead of an answer built
 from unrelated text (and no Claude call is made). The TF-IDF default is `0.1`;
 the transformer backend doesn't filter by default since its scores use a
 different scale. Tune it with `RAG_MIN_SCORE`.
+
+**All settings** (environment variables, see `src/docqa/config.py`):
+
+| variable | default | what it does |
+|---|---|---|
+| `RAG_MODEL` | `claude-opus-5` | Claude model for answers |
+| `RAG_MAX_TOKENS` | `16000` | answer token cap (thinking counts toward it) |
+| `RAG_BACKEND` | `tfidf` | `tfidf` or `transformer` |
+| `RAG_TOP_K` | `4` | passages retrieved per question |
+| `RAG_MIN_SCORE` | `0.1` (TF-IDF) | relevance threshold |
+| `RAG_EMBED_MODEL` | `google/bert_uncased_L-4_H-256_A-4` | transformer embedding model |
+| `RAG_EMBED_TOKENIZER` | the model's own | tokenizer override for the transformer backend |
+| `RAG_DATA_DIR` | `<repo>/data` | folder holding `docs/` and `index.joblib`; set it when installed with a regular `pip install .` |
 
 ---
 

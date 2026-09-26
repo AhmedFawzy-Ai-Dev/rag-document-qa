@@ -12,4 +12,4 @@ test:
 lint:
 	ruff check src tests app.py
 clean:
-	rm -rf data/index.joblib
+	python -c "import pathlib; pathlib.Path('data/index.joblib').unlink(missing_ok=True)"

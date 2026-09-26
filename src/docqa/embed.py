@@ -45,6 +45,16 @@ class TfidfEmbedder:
         return self.vectorizer.transform(texts)  # sparse (n, vocab)
 
 
+# Models whose hub repo ships no tokenizer config borrow a compatible one.
+# bert-mini has only vocab.txt, which is bert-base-uncased's vocabulary.
+BORROWED_TOKENIZERS = {"google/bert_uncased_L-4_H-256_A-4": "bert-base-uncased"}
+
+
+def tokenizer_name(model_name: str) -> str:
+    """The tokenizer to load for an embedding model (RAG_EMBED_TOKENIZER wins)."""
+    return config.EMBED_TOKENIZER_NAME or BORROWED_TOKENIZERS.get(model_name, model_name)
+
+
 class TransformerEmbedder:
     """Mean-pooled embeddings from a small BERT (needs the `transformer` extra)."""
 
@@ -60,8 +70,7 @@ class TransformerEmbedder:
             return
         from transformers import AutoModel, AutoTokenizer
 
-        # bert-mini ships no fast tokenizer; the bert-base vocab is compatible.
-        self._tok = AutoTokenizer.from_pretrained("bert-base-uncased")
+        self._tok = AutoTokenizer.from_pretrained(tokenizer_name(self.model_name))
         self._model = AutoModel.from_pretrained(self.model_name).eval()
 
     # The index is pickled with joblib: persist only the model name and reload the

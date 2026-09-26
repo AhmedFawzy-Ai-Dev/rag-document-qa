@@ -1,13 +1,14 @@
 """Tests for the RAG pipeline that run fully offline (no API key, no downloads)."""
 from __future__ import annotations
 
+import importlib
 from types import SimpleNamespace
 
 import anthropic
 import joblib
 import pytest
 
-from docqa import ask, generate
+from docqa import ask, config, embed, generate, ingest
 from docqa.chunk import chunk_text, load_and_chunk
 from docqa.embed import TransformerEmbedder
 from docqa.generate import extractive_answer, has_credentials
@@ -146,3 +147,98 @@ def test_ask_cli_prints_note(monkeypatch, capsys):
     monkeypatch.setattr("sys.argv", ["ask", "q"])
     ask.main()
     assert "AuthenticationError" in capsys.readouterr().err
+
+
+# A small labeled set: each question should retrieve its source document first.
+RETRIEVAL_EVAL = {
+    "data_leakage.md": [
+        LEAKAGE_Q, "how to detect leakage", "label permutation test",
+    ],
+    "transfer_learning.md": [
+        "When does transfer learning help?", "freezing a pretrained backbone for a new task",
+        "fine-tuning vs feature extraction",
+    ],
+    "evaluation_metrics.md": [
+        "Why is accuracy alone misleading?", "What is precision and recall?",
+        "F1 score on imbalanced classes",
+    ],
+    "rag_systems.md": [
+        "How does RAG reduce hallucination?", "what is a vector store",
+        "retrieval augmented generation citations",
+    ],
+}
+
+
+def test_retrieval_eval_recall_at_1(tfidf_store):
+    threshold = config.min_score("tfidf")
+    misses = []
+    for doc, questions in RETRIEVAL_EVAL.items():
+        for q in questions:
+            top = tfidf_store.search(q, k=1)[0]
+            if top.chunk.source != doc or top.score < threshold:
+                misses.append(f"{q!r} -> {top.chunk.source} ({top.score:.3f}), want {doc}")
+    assert not misses, "\n".join(misses)
+
+
+def _fake_claude(monkeypatch, text, stop_reason="end_turn"):
+    calls = []
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(content=[SimpleNamespace(type="text", text=text)],
+                               stop_reason=stop_reason)
+
+    client = SimpleNamespace(messages=SimpleNamespace(create=create))
+    monkeypatch.setattr(anthropic, "Anthropic", lambda: client)
+    return calls
+
+
+def test_claude_answer_path(tfidf_store, fake_key, monkeypatch):
+    calls = _fake_claude(monkeypatch, "Leakage is ... [1]")
+    result = answer(LEAKAGE_Q, store=tfidf_store)
+    assert result["mode"] == "claude"
+    assert result["answer"] == "Leakage is ... [1]"
+    assert "note" not in result
+    (req,) = calls
+    assert req["model"] == config.GEN_MODEL
+    assert req["max_tokens"] == config.MAX_ANSWER_TOKENS
+    assert req["system"] == generate.SYSTEM_PROMPT
+    prompt = req["messages"][0]["content"]
+    assert "[1] (source: data_leakage.md)" in prompt and LEAKAGE_Q in prompt
+
+
+def test_truncated_claude_answer_is_noted(tfidf_store, fake_key, monkeypatch):
+    _fake_claude(monkeypatch, "Leakage is", stop_reason="max_tokens")
+    result = answer(LEAKAGE_Q, store=tfidf_store)
+    assert result["mode"] == "claude"
+    assert "RAG_MAX_TOKENS" in result["note"]
+
+
+def test_tokenizer_name(monkeypatch):
+    monkeypatch.setattr(config, "EMBED_TOKENIZER_NAME", None)
+    assert embed.tokenizer_name("google/bert_uncased_L-4_H-256_A-4") == "bert-base-uncased"
+    assert embed.tokenizer_name("some/other-model") == "some/other-model"
+    monkeypatch.setattr(config, "EMBED_TOKENIZER_NAME", "my/tokenizer")
+    assert embed.tokenizer_name("some/other-model") == "my/tokenizer"
+
+
+def test_data_dir_env(monkeypatch, tmp_path):
+    monkeypatch.setenv("RAG_DATA_DIR", str(tmp_path))
+    try:
+        importlib.reload(config)
+        assert config.DOCS_DIR == tmp_path / "docs"
+        assert config.INDEX_PATH == tmp_path / "index.joblib"
+    finally:
+        monkeypatch.delenv("RAG_DATA_DIR")
+        importlib.reload(config)
+
+
+def test_ingest_reports_docs_dir_used(monkeypatch, tmp_path, capsys):
+    docs = tmp_path / "mydocs"
+    docs.mkdir()
+    (docs / "a.md").write_text("# A\n\nSome text about apples.", encoding="utf-8")
+    monkeypatch.setattr(config, "INDEX_PATH", tmp_path / "index.joblib")
+    monkeypatch.setattr("sys.argv", ["ingest", "--docs", str(docs), "--backend", "tfidf"])
+    ingest.main()
+    assert str(docs) in capsys.readouterr().out
+    assert (tmp_path / "index.joblib").exists()
