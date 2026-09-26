@@ -24,16 +24,24 @@ Ask a question over a folder of documents and get a grounded, cited answer:
 python -m docqa.ask "How does gradient boosting handle missing values?" --show-sources
 ```
 
-With `ANTHROPIC_API_KEY` set, Claude synthesizes a grounded answer and cites the
-passages (wording will vary — this is an illustrative example of the format):
+With `ANTHROPIC_API_KEY` set, Claude's answer streams in as it is written,
+followed by the exact sentences it relies on. The citations come from Claude's
+[Citations API](https://platform.claude.com/docs/en/build-with-claude/citations),
+not from the model typing `[1]`, so each one is guaranteed to quote a retrieved
+passage (wording will vary; this is an illustrative example of the format):
 
 ```
-A: HistGradientBoostingClassifier and HistGradientBoostingRegressor support NaNs
-natively: at each split the tree learns whether samples with missing values go
-left or right, based on the gain [1]. If a feature had no missing values during
-training, such samples go to the child with the most samples [1].
+A: HistGradientBoostingClassifier and HistGradientBoostingRegressor handle NaNs
+natively: at each split, the tree learns whether samples with missing values
+should go left or right, based on the potential gain. [1]
 
 [mode: claude]
+
+Citations (the exact sentences the answer relies on):
+  [1] "During training, the tree grower learns at each split point whether samples
+      with missing values should go to the left or right child, based on the
+      potential gain."
+      — ensemble.md > Ensembles: ... > Histogram-Based Gradient Boosting > Missing values support
 ```
 
 With **no key**, the app answers in extractive mode (verbatim from the docs).
@@ -109,9 +117,13 @@ question ─► BM25 top ranks ─┐                                │
    of the question with each word of the passage. That is more accurate, and
    too slow to run on every chunk, hence the two stages. Its score is also a
    usable relevance signal (see below).
-4. **Generate** (`generate.py`) — the top passages are put in the prompt and
-   **Claude** answers using only them, citing sources. No key? It falls back
-   to an **extractive** answer (the top passage) so the app still runs.
+4. **Generate** (`generate.py`) — each top passage goes to **Claude** as its own
+   document with **citations enabled**. The answer comes back with citations
+   attached by the API: for every cited claim, the passage and the exact
+   sentence it quotes. The `[n]` markers are built from those citations rather
+   than written by the model, so a citation can't point at a passage that
+   doesn't say it. Answers **stream** token by token. No key? It falls back to
+   an **extractive** answer (the top passage) so the app still runs.
 
 Without the optional `transformer` extra, the app runs BM25 alone: no torch,
 no model downloads.
