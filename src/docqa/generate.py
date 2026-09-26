@@ -37,6 +37,10 @@ def _sources(hits: list[Hit]) -> list[dict]:
     ]
 
 
+class NoAnswerError(Exception):
+    """Claude responded but produced no answer text (e.g. a refusal)."""
+
+
 def has_credentials() -> bool:
     """True if an Anthropic API key is available in the environment."""
     return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"))
@@ -48,10 +52,11 @@ def extractive_answer(question: str, hits: list[Hit]) -> dict:
         answer = "I couldn't find anything relevant to that in the documents."
     else:
         top = hits[0]
+        hint = "" if has_credentials() else " Set ANTHROPIC_API_KEY for a synthesized answer."
         answer = (
             f"{top.chunk.text}\n\n"
             f"(Extractive mode — showing the most relevant passage [1] from "
-            f"{top.chunk.source}. Set ANTHROPIC_API_KEY for a synthesized answer.)"
+            f"{top.chunk.source}.{hint})"
         )
     return {"answer": answer, "sources": _sources(hits), "mode": "extractive"}
 
@@ -74,16 +79,28 @@ def synthesize(question: str, hits: list[Hit], model: str | None = None) -> dict
         messages=[{"role": "user", "content": user_content}],
     )
     text = "".join(block.text for block in response.content if block.type == "text").strip()
+    if not text:
+        raise NoAnswerError(f"no answer text (stop_reason={response.stop_reason})")
     return {"answer": text, "sources": _sources(hits), "mode": "claude"}
 
 
 def generate(question: str, hits: list[Hit], model: str | None = None) -> dict:
-    """Synthesize with Claude when possible; otherwise fall back to extractive."""
-    if not has_credentials():
+    """Synthesize with Claude when possible; otherwise fall back to extractive.
+
+    With no relevant passages there is nothing to ground an answer in, so Claude
+    isn't called. SDK errors (bad key, unknown model, network) still fall back,
+    but the reason is returned in ``note`` so it isn't mistaken for "no key".
+    Anything else is a bug and propagates.
+    """
+    if not hits or not has_credentials():
         return extractive_answer(question, hits)
+    import anthropic
+
     try:
         return synthesize(question, hits, model)
-    except Exception as exc:  # noqa: BLE001 - any API/credential failure -> graceful fallback
+    except (anthropic.AnthropicError, NoAnswerError) as exc:
         result = extractive_answer(question, hits)
-        result["note"] = f"Claude call failed ({type(exc).__name__}); used extractive fallback."
+        result["note"] = (
+            f"Claude call failed ({type(exc).__name__}: {exc}); used extractive fallback."
+        )
         return result

@@ -24,7 +24,13 @@ class TfidfEmbedder:
         from sklearn.feature_extraction.text import TfidfVectorizer
 
         self.vectorizer = TfidfVectorizer(
-            lowercase=True, ngram_range=(1, 2), min_df=1, sublinear_tf=True
+            lowercase=True,
+            ngram_range=(1, 2),
+            min_df=1,
+            sublinear_tf=True,
+            # Without stop words, "who"/"the"/"is" alone give off-topic questions
+            # scores as high as genuinely relevant ones.
+            stop_words="english",
         )
         self._fitted = False
 
@@ -52,20 +58,28 @@ class TransformerEmbedder:
     def _ensure_loaded(self):
         if self._model is not None:
             return
-        import torch
         from transformers import AutoModel, AutoTokenizer
 
         # bert-mini ships no fast tokenizer; the bert-base vocab is compatible.
         self._tok = AutoTokenizer.from_pretrained("bert-base-uncased")
         self._model = AutoModel.from_pretrained(self.model_name).eval()
-        self._torch = torch
+
+    # The index is pickled with joblib: persist only the model name and reload the
+    # weights lazily, rather than embedding the whole model (and failing on the
+    # unpicklable torch objects) in index.joblib.
+    def __getstate__(self) -> dict:
+        return {"model_name": self.model_name}
+
+    def __setstate__(self, state: dict) -> None:
+        self.__init__(state["model_name"])
 
     def fit(self, texts: list[str]) -> TransformerEmbedder:
         return self  # pretrained; nothing to fit
 
     def encode(self, texts: list[str]) -> np.ndarray:
+        import torch
+
         self._ensure_loaded()
-        torch = self._torch
         vectors = []
         with torch.no_grad():
             for i in range(0, len(texts), 16):

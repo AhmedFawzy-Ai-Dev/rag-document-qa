@@ -105,7 +105,15 @@ pip install -e ".[ui]" && python app.py      # Gradio chat demo
 ```
 
 The generation model defaults to **`claude-opus-5`**; override with `RAG_MODEL`
-(e.g. `RAG_MODEL=claude-haiku-4-5` for a cheaper, faster answer).
+(e.g. `RAG_MODEL=claude-haiku-4-5` for a cheaper, faster answer). If a Claude
+call fails (bad key, unknown model, network), the app still answers extractively
+and prints the reason as a `Note:`.
+
+Passages scoring below a relevance threshold are dropped, so an off-topic
+question gets "I couldn't find anything relevant" instead of an answer built
+from unrelated text (and no Claude call is made). The TF-IDF default is `0.1`;
+the transformer backend doesn't filter by default since its scores use a
+different scale. Tune it with `RAG_MIN_SCORE`.
 
 ---
 

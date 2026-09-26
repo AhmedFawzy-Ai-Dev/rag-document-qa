@@ -8,6 +8,7 @@ Uses Claude when ANTHROPIC_API_KEY is set, otherwise an extractive fallback.
 from __future__ import annotations
 
 import argparse
+import sys
 
 from .pipeline import answer
 
@@ -27,6 +28,8 @@ def main() -> None:
     print(f"Q: {result['question']}\n")
     print(f"A: {result['answer']}\n")
     print(f"[mode: {result['mode']}]")
+    if "note" in result:
+        print(f"Note: {result['note']}", file=sys.stderr)
     if args.show_sources:
         print("\nSources (most relevant first):")
         for s in result["sources"]:
