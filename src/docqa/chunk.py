@@ -92,8 +92,41 @@ def chunk_text(text: str, source: str) -> list[Chunk]:
     return chunks
 
 
+SUPPORTED = {".md", ".txt", ".pdf"}
+
+
+def pdf_to_markdown(path: Path | str) -> str:
+    """A PDF as Markdown with one "## Page n" section per page (needs pypdf).
+
+    Page numbers become part of each chunk's section path, so an answer can cite
+    "Page 3". Pages without extractable text (scans) are skipped.
+    """
+    from pypdf import PdfReader
+
+    reader = PdfReader(str(path))
+    title = (reader.metadata.title if reader.metadata else None) or Path(path).stem
+    parts = [f"# {title.strip()}"]
+    for n, page in enumerate(reader.pages, start=1):
+        text = (page.extract_text() or "").strip()
+        if text:
+            parts.append(f"## Page {n}\n\n{text}")
+    if len(parts) == 1:
+        raise ValueError(f"{Path(path).name} has no extractable text (is it a scanned PDF?).")
+    return "\n\n".join(parts)
+
+
+def load_file(path: Path | str, name: str | None = None) -> list[Chunk]:
+    """Chunk one .md/.txt/.pdf file; ``name`` overrides the source name shown."""
+    path = Path(path)
+    suffix = path.suffix.lower()
+    if suffix not in SUPPORTED:
+        raise ValueError(f"Unsupported file type {suffix!r}; use {', '.join(sorted(SUPPORTED))}.")
+    text = pdf_to_markdown(path) if suffix == ".pdf" else path.read_text(encoding="utf-8")
+    return chunk_text(text, name or path.name)
+
+
 def load_and_chunk(docs_dir: Path | str | None = None) -> list[Chunk]:
-    """Read every .md/.txt file in a directory and chunk them all."""
+    """Read every .md/.txt/.pdf file in a directory and chunk them all."""
     docs_dir = Path(docs_dir) if docs_dir is not None else config.DOCS_DIR
     if not docs_dir.exists():
         raise FileNotFoundError(
@@ -101,9 +134,8 @@ def load_and_chunk(docs_dir: Path | str | None = None) -> list[Chunk]:
         )
     chunks: list[Chunk] = []
     for path in sorted(docs_dir.glob("*")):
-        if path.suffix.lower() not in {".md", ".txt"}:
-            continue
-        chunks.extend(chunk_text(path.read_text(encoding="utf-8"), path.name))
+        if path.suffix.lower() in SUPPORTED:
+            chunks.extend(load_file(path))
     if not chunks:
-        raise ValueError(f"No .md/.txt documents found in {docs_dir}.")
+        raise ValueError(f"No .md/.txt/.pdf documents found in {docs_dir}.")
     return chunks

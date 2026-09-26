@@ -155,8 +155,15 @@ python -m docqa.ask "Why can accuracy be misleading on imbalanced data?"
 **The web UI** is an optional extra too:
 
 ```bash
-pip install -e ".[ui]" && python app.py      # Gradio chat demo
+pip install -e ".[ui,transformer]" && python app.py      # Gradio chat at http://localhost:7860
 ```
+
+It's a chat: answers stream in and end with the exact sentences they cite.
+Follow-up questions ("does it work with sparse data?") are rewritten into
+standalone ones before searching (by Claude, or by prepending the previous
+question when there's no key). **Upload your own PDFs, Markdown or text files**
+to ask about those instead; PDF pages become sections, so citations say which
+page they quote.
 
 The generation model defaults to **`claude-opus-5`**; override with `RAG_MODEL`
 (e.g. `RAG_MODEL=claude-haiku-4-5` for a cheaper, faster answer). If a Claude
@@ -182,6 +189,9 @@ drops questions that share no words with the docs. Tune it with `RAG_MIN_SCORE`.
 | `RAG_RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L6-v2` | any sentence-transformers cross-encoder |
 | `RAG_RERANK_CANDIDATES` | `20` | fused candidates passed to the reranker |
 | `RAG_TOP_K` | `4` | passages given to Claude |
+| `RAG_REWRITE_MODEL` | same as `RAG_MODEL` | rewrites follow-up questions in the chat |
+| `RAG_JUDGE_MODEL` | `claude-opus-5` | grades answers in `docqa.judge` |
+| `RAG_MAX_QUESTIONS` | `20` | questions per chat session in the web UI (`0` = no limit) |
 | `RAG_MIN_SCORE` | per score type (reranker `-7`) | relevance threshold |
 | `RAG_EMBED_MODEL` | `BAAI/bge-small-en-v1.5` | any sentence-transformers model, for dense retrieval |
 | `RAG_DOCS_DIR` | `<data dir>/sklearn` | the documents to index |
@@ -290,13 +300,14 @@ rag-document-qa/
 │   ├── retrieve.py              # BM25, cosine scorers, RRF, cross-encoder reranker
 │   ├── store.py                 # build / persist / search (fuse + rerank) the index
 │   ├── generate.py              # Claude answer + extractive fallback
-│   ├── pipeline.py              # retrieve -> generate
+│   ├── pipeline.py              # retrieve -> generate (and a streaming version)
+│   ├── chat.py  conversation.py # chat turns, follow-up rewriting, uploads
 │   ├── evaluate.py              # retrieval metrics on the eval set
 │   ├── judge.py                 # answer quality, graded by Claude
 │   ├── report.py                # charts of the retrieval eval
 │   ├── ingest.py  ask.py        # CLIs
 ├── docs/                        # eval results (JSON) and the charts made from them
-├── app.py                       # optional Gradio UI
+├── app.py                       # Gradio chat UI
 ├── tests/  .github/workflows/  pyproject.toml
 ```
 

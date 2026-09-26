@@ -98,3 +98,8 @@ GEN_MODEL = os.environ.get("RAG_MODEL", "claude-opus-5")
 MAX_ANSWER_TOKENS = int(os.environ.get("RAG_MAX_TOKENS", "16000"))
 # Model that grades answers in `python -m docqa.judge`.
 JUDGE_MODEL = os.environ.get("RAG_JUDGE_MODEL", "claude-opus-5")
+# Model that rewrites follow-up questions into standalone ones (chat UI).
+REWRITE_MODEL = os.environ.get("RAG_REWRITE_MODEL", GEN_MODEL)
+# Questions allowed per chat session in the web UI (protects a public demo's
+# API credits); 0 for no limit.
+MAX_QUESTIONS_PER_SESSION = int(os.environ.get("RAG_MAX_QUESTIONS", "20"))
