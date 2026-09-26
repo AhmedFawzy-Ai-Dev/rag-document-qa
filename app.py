@@ -21,6 +21,7 @@ if (_SRC / "docqa").is_dir():
 
 from docqa import config
 from docqa.chat import index_files, respond
+from docqa.generate import has_credentials
 from docqa.store import VectorStore, build_index
 
 GUIDE, UPLOADS = "scikit-learn user guide", "My uploaded files"
@@ -51,7 +52,8 @@ def main() -> None:
     guide = _load_store()
     pipeline = (f"{guide.backend} retrieval"
                 + (" + cross-encoder reranking" if config.rerank_enabled() else "")
-                + f" · answers by {config.GEN_MODEL} with verified citations")
+                + (f" · answers by {config.GEN_MODEL} with verified citations"
+                   if has_credentials() else " · retrieval-only mode (no API key)"))
 
     def upload(files, current):
         if not files:
@@ -82,7 +84,7 @@ def main() -> None:
         with gr.Row():
             source = gr.Radio([GUIDE, UPLOADS], value=GUIDE, label="Search in", scale=1)
             files = gr.File(label="Upload PDF / .md / .txt", file_count="multiple",
-                            file_types=[".pdf", ".md", ".txt"], scale=2)
+                            file_types=[".pdf", ".md", ".txt"], scale=2, height=110)
         status = gr.Markdown()
         gr.ChatInterface(
             chat,

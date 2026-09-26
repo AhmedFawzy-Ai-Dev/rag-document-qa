@@ -31,6 +31,8 @@ def index_files(paths: list[str | Path]) -> VectorStore:
 
 def format_answer(result: dict, searched_for: str | None = None) -> str:
     """The final chat message: answer, then what was cited (or retrieved)."""
+    if result.get("passage"):
+        return _format_passage(result, searched_for)
     parts = [result["answer"]]
     if result.get("citations"):
         parts.append(SOURCES_RULE + "**Sources: the sentences this answer relies on**")
@@ -44,12 +46,41 @@ def format_answer(result: dict, searched_for: str | None = None) -> str:
     notes = []
     if searched_for:
         notes.append(f"searched for: *{searched_for}*")
-    if result["mode"] != "claude":
+    if result["mode"] != "claude" and not result["sources"]:
+        notes.append("no passage in the docs was relevant enough, so no answer was generated")
+    elif result["mode"] != "claude":
         notes.append("extractive mode (no Claude answer)")
     if result.get("note"):
         notes.append(result["note"])
     if notes:
         parts.append("\n\n<sub>" + " · ".join(notes) + "</sub>")
+    return "".join(parts)
+
+
+def _format_passage(result: dict, searched_for: str | None) -> str:
+    """The retrieval-only answer: the best passage under its heading, then the rest."""
+    p = result["passage"]
+    title = p["section"].split(" > ")[-1] if p["section"] else p["source"]
+    parts = [f"**{title}**\n\n<sub>{p['source']} › {p['section']}</sub>\n\n{p['text']}"]
+    seen = {(p["source"], p["section"])}
+    others = []
+    for s in result["sources"][1:]:       # a long section spans several chunks
+        key = (s["source"], s.get("section", ""))
+        if key not in seen:
+            seen.add(key)
+            others.append(s)
+    if others:
+        parts.append(SOURCES_RULE + "**Also relevant**\n")
+        parts.extend(f"\n- {s['source']} › {s.get('section', '')}" for s in others)
+    notes = []
+    if searched_for:
+        notes.append(f"searched for: *{searched_for}*")
+    if result.get("note"):
+        notes.append(result["note"])
+    else:
+        notes.append("retrieval only: the most relevant passage in the docs. With an "
+                     "Anthropic API key, Claude writes an answer citing the exact sentences")
+    parts.append("\n\n<sub>" + " · ".join(notes) + "</sub>")
     return "".join(parts)
 
 

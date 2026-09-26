@@ -1,11 +1,11 @@
 # RAG Document Q&A — Ask Your Docs
 
-> A small but complete **Retrieval-Augmented Generation** app: it retrieves the
-> most relevant passages from your documents and answers questions with
-> **Claude**, grounded in the sources and cited by number. Runs offline with an
-> extractive fallback when no API key is set. Ships with the full
-> **scikit-learn user guide** (44 pages, ~140k words) as its knowledge base and a
-> 100-question retrieval eval.
+> A **Retrieval-Augmented Generation** app built and measured step by step: it
+> finds the passages that answer a question in the full **scikit-learn user
+> guide** (44 pages, ~140k words) or in your own PDFs, using hybrid search and a
+> cross-encoder reranker, and with an Anthropic API key, **Claude** answers
+> from them with verified citations. Without a key it runs fully locally as a
+> retrieval engine. Every design choice is backed by a 100-question eval.
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Claude](https://img.shields.io/badge/LLM-Claude-6b57ff)
@@ -23,8 +23,19 @@
   **cross-encoder reranker** that also filters off-topic questions.
 - **Verified citations** via Claude's Citations API: every `[n]` quotes the
   exact sentence it relies on.
-- **Streaming chat UI** with follow-up questions and **PDF upload**, deployable
-  to a Hugging Face Space with one command.
+- **Streaming chat UI** with follow-up questions and **PDF upload**.
+
+![Demo: asking the scikit-learn guide a question](docs/images/demo.gif)
+
+*The app running locally without an API key (retrieval only): hybrid search +
+reranking finds the section that answers the question. With a key, Claude writes
+an answer on top of it that cites the exact sentences it uses.*
+
+| Follow-up questions are understood | Off-topic questions are refused |
+|---|---|
+| ![Follow-up](docs/images/demo_followup.png) | ![Off-topic](docs/images/demo_offtopic.png) |
+| **Your own PDFs, cited by page** | **The best passage, under its section** |
+| ![PDF upload](docs/images/demo_pdf.png) | ![Answer](docs/images/demo_answer.png) |
 
 ---
 
@@ -211,10 +222,13 @@ drops questions that share no words with the docs. Tune it with `RAG_MIN_SCORE`.
 
 ## Deploy the demo to Hugging Face Spaces
 
+> Hugging Face now requires a **PRO** subscription to host Gradio apps (free
+> Spaces are static only), so this is optional.
+
 ```bash
 pip install -e ".[transformer]" huggingface_hub
-python -m docqa.ingest                                   # the hybrid index the Space will serve
-huggingface-cli login                                    # a token with write access
+python -m docqa.ingest                                        # the hybrid index the Space will serve
+python -c "from huggingface_hub import login; login()"        # log in (browser or a write token)
 python scripts/deploy_space.py --space YOUR_NAME/ask-sklearn-docs --set-secret
 ```
 
@@ -225,6 +239,9 @@ match the current corpus. `--set-secret` copies `ANTHROPIC_API_KEY` from your
 shell into the Space's secrets; **put a spending limit on that key**, because
 visitors' questions use it. `RAG_MAX_QUESTIONS` (default 20) caps each chat
 session.
+
+The screenshots above are made with `python scripts/capture_demo.py` (Playwright
+driving Microsoft Edge) against a running `python app.py`.
 
 ---
 
@@ -328,6 +345,7 @@ rag-document-qa/
 │   └── ml_notes/*.md            # tiny corpus for fast tests
 ├── scripts/fetch_sklearn_docs.py  # rebuilds data/sklearn from a pinned release
 ├── scripts/deploy_space.py      # publishes the demo to a Hugging Face Space
+├── scripts/capture_demo.py      # records the README's GIF and screenshots
 ├── deploy/space/                # the Space's card and pinned requirements
 ├── src/docqa/
 │   ├── config.py                # paths, backend, model, chunk params
