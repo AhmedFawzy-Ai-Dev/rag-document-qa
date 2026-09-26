@@ -37,6 +37,7 @@ class Question:
     source: str
     section: str
     style: str = "keyword"
+    answer_hint: str = ""   # a one-line reference answer (used by the judge)
 
 
 def load_questions(path: Path | str | None = None) -> list[Question]:

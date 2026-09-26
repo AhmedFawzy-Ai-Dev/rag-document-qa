@@ -186,7 +186,8 @@ guide's own terms ("keyword") and 51 describing the need in other words
 spot-checked against it.
 
 ```bash
-python -m docqa.evaluate            # every installed method
+python -m docqa.evaluate --json docs/eval_results.json   # every installed method
+python -m docqa.report docs/eval_results.json            # redraw the charts (`report` extra)
 ```
 
 A retrieved chunk is a **page hit** if it comes from the right page and a
@@ -203,6 +204,10 @@ laptop CPU, i7-8550U):
 | BM25 + rerank | 0.91 | 0.79 | 0.86 | 0.88 | 0.82 | 0.76 | 2,857 |
 | dense + rerank | 0.89 | 0.77 | 0.87 | 0.89 | 0.82 | 0.78 | 2,885 |
 | **hybrid + rerank (default)** | **0.91** | **0.80** | **0.88** | **0.92** | **0.84** | **0.84** | 3,266 |
+
+![Retrieval quality per method](docs/images/retrieval_quality.png)
+
+![Quality vs. latency](docs/images/quality_vs_latency.png)
 
 What the numbers say:
 
@@ -221,6 +226,31 @@ It doesn't fix everything. For *"How do I keep class proportions equal across
 CV folds?"* the top hit is still the *Group K-fold* section (it mentions class
 proportions and points to `StratifiedGroupKFold`, the second hit) rather than
 *Stratified K-fold*.
+
+### Answer quality: Claude as the judge
+
+Retrieval metrics say whether the right passage was found; they don't say
+whether the final answer is faithful to it. `docqa.judge` runs the full
+pipeline on each eval question and has a second Claude call grade the answer
+against the retrieved passages and the question's reference answer, with a
+fixed JSON schema:
+
+| field | question it answers |
+|---|---|
+| `support` (`all`/`most`/`some`/`none`) | Are the answer's claims backed by the passages? (faithfulness) |
+| `answers_question` | Does it answer what was asked? |
+| `matches_reference` | Does it agree with the reference answer written with the question? |
+| `citations_valid` | Does every `[n]` point at a passage that says what it's cited for? |
+| `says_not_found` | Did it say the passages don't contain the answer? |
+
+```bash
+python -m docqa.judge --limit 10                 # a cheap first look
+python -m docqa.judge --json judged.json         # all 100; prints rates and token cost
+```
+
+Each verdict comes with the judge's reason and the unsupported claims, so any
+grade can be checked by hand. The judge is the same model family as the
+answerer, which can flatter it; spot-checking the reasons is part of the job.
 
 **Chunking was chosen on this set too** (MRR, TF-IDF / bge-small):
 
@@ -250,7 +280,10 @@ rag-document-qa/
 │   ├── generate.py              # Claude answer + extractive fallback
 │   ├── pipeline.py              # retrieve -> generate
 │   ├── evaluate.py              # retrieval metrics on the eval set
+│   ├── judge.py                 # answer quality, graded by Claude
+│   ├── report.py                # charts of the retrieval eval
 │   ├── ingest.py  ask.py        # CLIs
+├── docs/                        # eval results (JSON) and the charts made from them
 ├── app.py                       # optional Gradio UI
 ├── tests/  .github/workflows/  pyproject.toml
 ```

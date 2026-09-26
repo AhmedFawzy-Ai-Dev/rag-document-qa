@@ -22,6 +22,7 @@ dependencies = [
 dev = ["pytest>=7.4", "ruff>=0.4"]
 transformer = ["sentence-transformers>=5.0"]           # dense embedding backend
 ui = ["gradio>=4.0"]                                   # optional web demo
+report = ["matplotlib>=3.7"]                           # eval charts (docqa.report)
 
 [project.scripts]
 docqa-ingest = "docqa.ingest:main"
