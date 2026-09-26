@@ -96,3 +96,5 @@ GEN_MODEL = os.environ.get("RAG_MODEL", "claude-opus-5")
 # Claude Opus 5 thinks by default and thinking counts toward max_tokens, so a
 # tight cap can cut the answer off (or leave none); answers stay short anyway.
 MAX_ANSWER_TOKENS = int(os.environ.get("RAG_MAX_TOKENS", "16000"))
+# Model that grades answers in `python -m docqa.judge`.
+JUDGE_MODEL = os.environ.get("RAG_JUDGE_MODEL", "claude-opus-5")

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import json
 import os
 from types import SimpleNamespace
 
@@ -230,7 +231,8 @@ def _fake_claude(monkeypatch, text, stop_reason="end_turn"):
     def create(**kwargs):
         calls.append(kwargs)
         return SimpleNamespace(content=[SimpleNamespace(type="text", text=text)],
-                               stop_reason=stop_reason)
+                               stop_reason=stop_reason,
+                               usage=SimpleNamespace(input_tokens=100, output_tokens=20))
 
     client = SimpleNamespace(messages=SimpleNamespace(create=create))
     monkeypatch.setattr(anthropic, "Anthropic", lambda: client)
@@ -490,3 +492,55 @@ def test_reranker_filters_off_topic_questions(hybrid_store, monkeypatch):
     assert off_topic["sources"] == [] and "couldn't find" in off_topic["answer"]
     on_topic = answer(LEAKAGE_Q, store=hybrid_store)
     assert on_topic["sources"][0]["source"] == "data_leakage.md"
+
+
+# --- Claude as the judge (fake client) ----------------------------------------------------
+
+def test_judge_sends_schema_and_parses_verdict(tfidf_store):
+    from docqa import judge
+
+    verdict = {"support": "most", "unsupported_claims": ["x"], "answers_question": True,
+               "matches_reference": True, "says_not_found": False, "citations_valid": True,
+               "reason": "ok"}
+    calls = []
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(content=[SimpleNamespace(type="text", text=json.dumps(verdict))],
+                               stop_reason="end_turn",
+                               usage=SimpleNamespace(input_tokens=500, output_tokens=80))
+
+    client = SimpleNamespace(messages=SimpleNamespace(create=create))
+    hits = tfidf_store.search(LEAKAGE_Q, 2)
+    got, usage = judge.judge_answer(client, LEAKAGE_Q, "leakage is ...", hits,
+                                    "Leakage is [1].", "claude-opus-5")
+    assert got == verdict and usage.input_tokens == 500
+    (req,) = calls
+    assert req["output_config"]["format"]["schema"] is judge.VERDICT_SCHEMA
+    assert "[1] (source: data_leakage.md)" in req["messages"][0]["content"]
+    assert "leakage is ..." in req["messages"][0]["content"]
+
+
+def test_judge_rejects_truncated_verdicts(tfidf_store):
+    from docqa import judge
+
+    client = SimpleNamespace(messages=SimpleNamespace(create=lambda **kw: SimpleNamespace(
+        content=[SimpleNamespace(type="text", text="{")], stop_reason="max_tokens",
+        usage=SimpleNamespace(input_tokens=1, output_tokens=1))))
+    with pytest.raises(RuntimeError, match="max_tokens"):
+        judge.judge_answer(client, "q", "", [], "a", "claude-opus-5")
+
+
+def test_judge_summary():
+    from docqa.judge import summarize
+
+    def row(support, match):
+        return {"verdict": {"support": support, "answers_question": True,
+                            "matches_reference": match, "citations_valid": True,
+                            "says_not_found": False}}
+
+    s = summarize([row("all", True), row("most", True), row("none", False), {"error": "x"}])
+    assert s["judged"] == 3 and s["errors"] == 1
+    assert s["fully_supported"] == pytest.approx(1 / 3, abs=1e-3)
+    assert s["mostly_or_fully_supported"] == pytest.approx(2 / 3, abs=1e-3)
+    assert s["matches_reference"] == pytest.approx(2 / 3, abs=1e-3)
