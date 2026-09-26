@@ -33,7 +33,8 @@ def main() -> None:
         srcs = "\n".join(
             f"[{s['n']}] {s['source']} (score {s['score']})" for s in result["sources"]
         )
-        return f"{result['answer']}\n\n_mode: {result['mode']}_", srcs
+        note = f"\n\n**Note:** {result['note']}" if "note" in result else ""
+        return f"{result['answer']}\n\n_mode: {result['mode']}_{note}", srcs
 
     with gr.Blocks(title="Ask Your Docs (RAG)") as demo:
         gr.Markdown("# Ask Your Docs\nRetrieval-Augmented Q&A over a small ML knowledge base.")
