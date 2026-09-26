@@ -715,7 +715,8 @@ def test_chat_reports_the_rewritten_question(tfidf_store, monkeypatch):
                {"role": "assistant", "content": "..."}]
     final = list(respond("how do I detect it?", history, tfidf_store))[-1]
     assert "searched for: *What is data leakage? how do I detect it?*" in final
-    assert "Retrieved passages" in final and "extractive mode" in final
+    assert final.startswith("**")                      # the passage's section title
+    assert "**Also relevant**" in final and "retrieval only" in final
 
 
 def test_chat_session_limit(tfidf_store, monkeypatch):

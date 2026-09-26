@@ -94,18 +94,25 @@ def has_credentials() -> bool:
 
 
 def extractive_answer(question: str, hits: list[Hit]) -> dict:
-    """No-LLM fallback: surface the top passages as the answer."""
+    """No-LLM fallback: surface the top passages as the answer.
+
+    ``passage`` carries the top passage's parts (for a UI to lay out); ``answer``
+    is the same content as plain text.
+    """
+    result = {"sources": _sources(hits), "mode": "extractive", "citations": []}
     if not hits or hits[0].score <= 0:
-        answer = "I couldn't find anything relevant to that in the documents."
-    else:
-        top = hits[0]
-        hint = "" if has_credentials() else " Set ANTHROPIC_API_KEY for a synthesized answer."
-        answer = (
-            f"{top.chunk.text}\n\n"
-            f"(Extractive mode — showing the most relevant passage [1] from "
-            f"{top.chunk.source}.{hint})"
-        )
-    return {"answer": answer, "sources": _sources(hits), "mode": "extractive", "citations": []}
+        result["answer"] = "I couldn't find anything relevant to that in the documents."
+        return result
+    top = hits[0]
+    hint = "" if has_credentials() else " Set ANTHROPIC_API_KEY for a synthesized answer."
+    result["answer"] = (
+        f"{top.chunk.text}\n\n"
+        f"(Extractive mode — showing the most relevant passage [1] from "
+        f"{top.chunk.source}.{hint})"
+    )
+    result["passage"] = {"source": top.chunk.source, "section": top.chunk.section,
+                         "text": _body(top)}
+    return result
 
 
 def build_result(message, hits: list[Hit]) -> dict:

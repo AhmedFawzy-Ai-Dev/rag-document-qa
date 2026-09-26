@@ -1,6 +1,6 @@
 """Publish the web demo to a Hugging Face Space.
 
-    huggingface-cli login                        # once, with a *write* token
+    python -c "from huggingface_hub import login; login()"   # once (needs HF PRO for Gradio)
     python -m docqa.ingest                       # the hybrid index (needs the transformer extra)
     python scripts/deploy_space.py --space YOUR_NAME/ask-sklearn-docs --set-secret
 
