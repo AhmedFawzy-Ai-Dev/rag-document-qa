@@ -19,10 +19,18 @@ from docqa.chunk import chunk_text, load_and_chunk
 from docqa.embed import TransformerEmbedder
 from docqa.generate import extractive_answer, has_credentials
 from docqa.pipeline import answer
-from docqa.store import VectorStore, build_index
+from docqa.retrieve import BM25Scorer, CosineScorer, rrf
+from docqa.store import VectorStore, build_index, resolve_backend
 
 NOTES = config.DATA_DIR / "ml_notes"  # small corpus: fast, and its answers are known
 LEAKAGE_Q = "What is data leakage and how do you detect it?"
+
+
+@pytest.fixture(autouse=True)
+def no_rerank_by_default(monkeypatch):
+    # RAG_RERANK=auto turns reranking on whenever sentence-transformers is installed;
+    # tests opt in explicitly so they stay fast and don't depend on the machine.
+    monkeypatch.setattr(config, "RERANK", "0")
 
 
 @pytest.fixture
@@ -255,15 +263,67 @@ def test_search_encodes_query_as_a_query():
     class Embedder:
         name = "fake"
 
-        def encode(self, texts):
-            raise AssertionError("queries must go through encode_queries")
+        def fit(self, texts):
+            return self
+
+        def encode(self, texts):          # documents
+            return np.array([[0.0, 1.0], [1.0, 0.0]])
 
         def encode_queries(self, texts):
             return np.array([[1.0, 0.0]])
 
     chunks = load_and_chunk(NOTES)[:2]
-    store = VectorStore(Embedder(), np.array([[0.0, 1.0], [1.0, 0.0]]), chunks)
+    scorer = CosineScorer(Embedder()).fit([c.text for c in chunks])
+    store = VectorStore({"fake": scorer}, chunks, backend="fake")
     assert store.search("q", k=1)[0].chunk is chunks[1]
+
+
+# --- BM25, rank fusion, reranking --------------------------------------------------------
+
+def test_bm25_ranks_term_matches_and_ignores_stop_words():
+    texts = ["the cat sat on the mat", "dogs chase cats", "stock market prices fell"]
+    bm25 = BM25Scorer().fit(texts)
+    s = bm25.scores("the market")
+    assert s.argmax() == 2 and s[0] == 0 and s[1] == 0     # "the" is a stop word
+    assert not bm25.scores("quantum chromodynamics").any()  # no overlap -> all zero
+
+
+def test_rrf_fuses_ranks():
+    a = np.array([3.0, 2.0, 1.0])       # ranks 1, 2, 3
+    b = np.array([0.1, 0.9, 0.5])       # ranks 3, 1, 2
+    fused = rrf([a, b], k=60)
+    assert fused == pytest.approx([1 / 61 + 1 / 63, 1 / 62 + 1 / 61, 1 / 63 + 1 / 62])
+    assert fused.argmax() == 1          # 2nd + 1st beats 1st + 3rd
+
+
+def test_rerank_reorders_candidates(monkeypatch, tfidf_store):
+    class ReverseReranker:
+        def score(self, query, texts):
+            return -np.arange(len(texts), dtype=float)[::-1]   # last candidate best
+
+    monkeypatch.setattr("docqa.store.get_reranker", lambda: ReverseReranker())
+    monkeypatch.setattr(config, "RERANK_CANDIDATES", 5)
+    plain = tfidf_store.search(LEAKAGE_Q, k=5, rerank=False)
+    reranked = tfidf_store.search(LEAKAGE_Q, k=5, rerank=True)
+    assert [h.chunk for h in reranked] == [h.chunk for h in plain][::-1]
+    assert {h.kind for h in reranked} == {"rerank"} and plain[0].kind == "tfidf"
+
+
+def test_resolve_backend(monkeypatch):
+    monkeypatch.setattr(config, "dense_available", lambda: False)
+    assert resolve_backend("auto") == "bm25"
+    monkeypatch.setattr(config, "dense_available", lambda: True)
+    assert resolve_backend("auto") == "hybrid"
+    assert resolve_backend("dense") == "transformer"
+    with pytest.raises(ValueError):
+        resolve_backend("nope")
+
+
+def test_old_index_format_is_reported(tmp_path):
+    path = tmp_path / "index.joblib"
+    joblib.dump(SimpleNamespace(embedder=None, matrix=None, chunks=[]), path)
+    with pytest.raises(RuntimeError, match="older version"):
+        VectorStore.load(path)
 
 
 def test_data_dir_env(monkeypatch, tmp_path):
@@ -400,3 +460,33 @@ def test_eval_set_points_at_real_sections():
     sections = {(c.source, c.section) for c in load_and_chunk()}
     missing = [q.question for q in questions if (q.source, q.section) not in sections]
     assert len(questions) >= 100 and not missing, missing
+
+
+@pytest.fixture(scope="module")
+def hybrid_store(transformer_store):
+    # (depends on transformer_store only for its skip-without-the-extra logic)
+    return build_index(NOTES, backend="hybrid", save=False)
+
+
+def test_hybrid_search_fuses_and_can_be_restricted(hybrid_store):
+    hits = hybrid_store.search(LEAKAGE_Q, k=3, rerank=False)
+    assert hits[0].kind == "rrf" and hits[0].chunk.source == "data_leakage.md"
+    only_bm25 = hybrid_store.search(LEAKAGE_Q, k=1, rerank=False, scorers=["bm25"])
+    assert only_bm25[0].kind == "bm25"
+
+
+def test_real_reranker(hybrid_store):
+    hits = hybrid_store.search("my fraud model is 99% right but catches nothing", k=3, rerank=True)
+    assert [h.kind for h in hits] == ["rerank"] * 3
+    assert hits[0].chunk.source == "evaluation_metrics.md"
+    assert hits[0].score >= hits[1].score >= hits[2].score
+
+
+def test_reranker_filters_off_topic_questions(hybrid_store, monkeypatch):
+    monkeypatch.setattr(config, "RERANK", "1")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    off_topic = answer("Who won the 2022 World Cup?", store=hybrid_store)
+    assert off_topic["sources"] == [] and "couldn't find" in off_topic["answer"]
+    on_topic = answer(LEAKAGE_Q, store=hybrid_store)
+    assert on_topic["sources"][0]["source"] == "data_leakage.md"

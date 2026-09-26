@@ -16,7 +16,7 @@ def answer(question: str, store: VectorStore | None = None, k: int | None = None
     """
     store = store or VectorStore.load()
     hits = store.search(question, k or config.TOP_K)
-    threshold = config.min_score(store.embedder.name) if min_score is None else min_score
-    hits = [h for h in hits if h.score >= threshold]
+    hits = [h for h in hits
+            if h.score >= (config.min_score(h.kind) if min_score is None else min_score)]
     result = generate(question, hits, model)
     return {"question": question, **result}

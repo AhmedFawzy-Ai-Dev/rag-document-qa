@@ -28,8 +28,8 @@ jobs:
         run: |
           python -m docqa.ingest
           python -m docqa.ask "How do I keep class proportions equal across CV folds?" --show-sources
-      - name: Retrieval eval (TF-IDF)
-        run: python -m docqa.evaluate --backend tfidf
+      - name: Retrieval eval (TF-IDF, BM25)
+        run: python -m docqa.evaluate --method tfidf --method bm25
 
   # The dense backend needs torch and a model download, so it gets its own job
   # (one Python version) instead of slowing down the matrix above.
@@ -54,7 +54,7 @@ jobs:
           pip install -e ".[dev,transformer]"
       - name: Test
         run: pytest -q
-      - name: Ingest + ask (transformer backend)
+      - name: Ingest + ask (hybrid + reranker)
         run: |
-          python -m docqa.ingest --backend transformer --docs data/ml_notes
+          python -m docqa.ingest --backend hybrid --docs data/ml_notes
           python -m docqa.ask "my fraud model is 99% right but catches nothing" --show-sources
