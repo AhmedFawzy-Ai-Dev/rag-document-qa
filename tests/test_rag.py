@@ -1,14 +1,19 @@
-"""Tests for the RAG pipeline that run fully offline (no API key, no downloads)."""
+"""Tests for the RAG pipeline. They run offline with no API key; the transformer
+tests also need the `transformer` extra (and download the embedding model), and
+are skipped without it.
+"""
 from __future__ import annotations
 
 import importlib
+import os
 from types import SimpleNamespace
 
 import anthropic
 import joblib
+import numpy as np
 import pytest
 
-from docqa import ask, config, embed, generate, ingest
+from docqa import ask, config, generate, ingest
 from docqa.chunk import chunk_text, load_and_chunk
 from docqa.embed import TransformerEmbedder
 from docqa.generate import extractive_answer, has_credentials
@@ -82,15 +87,15 @@ def test_has_credentials_is_bool():
 
 
 def test_transformer_embedder_pickles_without_model(tmp_path):
-    # A loaded model/tokenizer (here: unpicklable stand-ins) must not end up in
+    # A loaded model (here: an unpicklable stand-in) must not end up in
     # index.joblib; only the model name is persisted and weights reload lazily.
     emb = TransformerEmbedder("some/model")
-    emb._model, emb._tok = (lambda: None), (lambda: None)
+    emb._model = lambda: None
     path = tmp_path / "emb.joblib"
     joblib.dump(emb, path)
     loaded = joblib.load(path)
     assert loaded.model_name == "some/model"
-    assert loaded._model is None and loaded._tok is None
+    assert loaded._model is None
 
 
 def test_off_topic_question_finds_nothing(tfidf_store, fake_key, monkeypatch):
@@ -169,14 +174,43 @@ RETRIEVAL_EVAL = {
 }
 
 
-def test_retrieval_eval_recall_at_1(tfidf_store):
-    threshold = config.min_score("tfidf")
+# The same topics asked in words the docs mostly don't use; TF-IDF gets 9 of these.
+PARAPHRASE_EVAL = {
+    "data_leakage.md": [
+        "My model scored brilliantly offline but flopped once deployed. Why?",
+        "Should I normalize features before or after dividing train and test?",
+        "copies of the same example ended up on both sides of my split",
+    ],
+    "transfer_learning.md": [
+        "reuse an ImageNet network for my small image dataset",
+        "I only have a few hundred labelled examples, can a pretrained model help?",
+        "should I retrain all the layers or keep them fixed",
+    ],
+    "evaluation_metrics.md": [
+        "my fraud model is 99% right but catches nothing",
+        "how often are the positive predictions actually correct",
+        "which measure should I report for a regression model",
+    ],
+    "rag_systems.md": [
+        "how do you stop a chatbot from making things up",
+        "grounding LLM responses in my company's documents",
+        "keyword search versus neural embeddings for finding passages",
+    ],
+}
+
+
+def _recall_misses(store, labeled: dict, threshold: float = 0.0) -> list[str]:
     misses = []
-    for doc, questions in RETRIEVAL_EVAL.items():
+    for doc, questions in labeled.items():
         for q in questions:
-            top = tfidf_store.search(q, k=1)[0]
+            top = store.search(q, k=1)[0]
             if top.chunk.source != doc or top.score < threshold:
                 misses.append(f"{q!r} -> {top.chunk.source} ({top.score:.3f}), want {doc}")
+    return misses
+
+
+def test_retrieval_eval_recall_at_1(tfidf_store):
+    misses = _recall_misses(tfidf_store, RETRIEVAL_EVAL, config.min_score("tfidf"))
     assert not misses, "\n".join(misses)
 
 
@@ -214,12 +248,20 @@ def test_truncated_claude_answer_is_noted(tfidf_store, fake_key, monkeypatch):
     assert "RAG_MAX_TOKENS" in result["note"]
 
 
-def test_tokenizer_name(monkeypatch):
-    monkeypatch.setattr(config, "EMBED_TOKENIZER_NAME", None)
-    assert embed.tokenizer_name("google/bert_uncased_L-4_H-256_A-4") == "bert-base-uncased"
-    assert embed.tokenizer_name("some/other-model") == "some/other-model"
-    monkeypatch.setattr(config, "EMBED_TOKENIZER_NAME", "my/tokenizer")
-    assert embed.tokenizer_name("some/other-model") == "my/tokenizer"
+def test_search_encodes_query_as_a_query():
+    # Some embedding models use different prompts for queries and documents.
+    class Embedder:
+        name = "fake"
+
+        def encode(self, texts):
+            raise AssertionError("queries must go through encode_queries")
+
+        def encode_queries(self, texts):
+            return np.array([[1.0, 0.0]])
+
+    chunks = load_and_chunk()[:2]
+    store = VectorStore(Embedder(), np.array([[0.0, 1.0], [1.0, 0.0]]), chunks)
+    assert store.search("q", k=1)[0].chunk is chunks[1]
 
 
 def test_data_dir_env(monkeypatch, tmp_path):
@@ -242,3 +284,25 @@ def test_ingest_reports_docs_dir_used(monkeypatch, tmp_path, capsys):
     ingest.main()
     assert str(docs) in capsys.readouterr().out
     assert (tmp_path / "index.joblib").exists()
+
+
+@pytest.fixture(scope="module")
+def transformer_store():
+    # Skipped unless the `transformer` extra is installed. CI's transformer job sets
+    # RAG_REQUIRE_TRANSFORMER, so a broken install fails there instead of skipping.
+    if not os.environ.get("RAG_REQUIRE_TRANSFORMER"):
+        pytest.importorskip("sentence_transformers")
+    return build_index(save=False, backend="transformer")
+
+
+def test_transformer_retrieval_eval(transformer_store):
+    misses = _recall_misses(transformer_store, RETRIEVAL_EVAL)
+    misses += _recall_misses(transformer_store, PARAPHRASE_EVAL)
+    assert not misses, "\n".join(misses)
+
+
+def test_transformer_index_round_trip(transformer_store, tmp_path):
+    path = transformer_store.save(tmp_path / "index.joblib")
+    assert path.stat().st_size < 1_000_000  # vectors and chunks, not model weights
+    loaded = VectorStore.load(path)
+    assert loaded.search(LEAKAGE_Q, k=1)[0].chunk.source == "data_leakage.md"

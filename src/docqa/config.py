@@ -21,19 +21,21 @@ CHUNK_OVERLAP = 30       # words shared between consecutive chunks
 # --- retrieval ---
 # Backend for turning text into vectors:
 #   "tfidf"       -> scikit-learn TF-IDF (default; no downloads, fully local)
-#   "transformer" -> mean-pooled embeddings from a small BERT (optional extra)
+#   "transformer" -> dense sentence-transformers embeddings (optional extra)
 EMBEDDING_BACKEND = os.environ.get("RAG_BACKEND", "tfidf")
-EMBED_MODEL_NAME = os.environ.get("RAG_EMBED_MODEL", "google/bert_uncased_L-4_H-256_A-4")
-# Tokenizer for the transformer backend; by default the embedding model's own
-# (see embed.py for the one model that borrows another's).
-EMBED_TOKENIZER_NAME = os.environ.get("RAG_EMBED_TOKENIZER")
+# bge-small (33M params, 384-d) retrieved the right doc for all 24 labeled
+# questions in tests/test_rag.py, including 12 paraphrases that share few words
+# with the docs (TF-IDF: 9/12).
+EMBED_MODEL_NAME = os.environ.get("RAG_EMBED_MODEL", "BAAI/bge-small-en-v1.5")
 TOP_K = int(os.environ.get("RAG_TOP_K", "4"))
 
 # Retrieved passages scoring below this are dropped as irrelevant; if none remain,
 # the app says it found nothing instead of answering from unrelated text. The
 # TF-IDF default is calibrated on the bundled docs (on-topic questions score
-# >= 0.16; off-topic ones mostly 0). Dense embeddings score on a different scale,
-# so the transformer backend doesn't filter unless RAG_MIN_SCORE is set.
+# >= 0.16; off-topic ones mostly 0). Dense cosine scores don't separate the two
+# (bge-small: on-topic >= 0.52, off-topic up to 0.54), so the transformer backend
+# doesn't filter unless RAG_MIN_SCORE is set; Claude is told to say when the
+# passages don't answer the question.
 MIN_SCORE_DEFAULTS = {"tfidf": 0.1, "transformer": 0.0}
 MIN_SCORE_OVERRIDE = os.environ.get("RAG_MIN_SCORE")
 
